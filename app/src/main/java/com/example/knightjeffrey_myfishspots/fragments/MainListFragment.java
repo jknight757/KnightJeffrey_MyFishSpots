@@ -4,6 +4,7 @@ package com.example.knightjeffrey_myfishspots.fragments;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.ListFragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +15,7 @@ import com.example.knightjeffrey_myfishspots.R;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MainListFragment extends Fragment {
+public class MainListFragment extends ListFragment {
 
 
     public MainListFragment() {

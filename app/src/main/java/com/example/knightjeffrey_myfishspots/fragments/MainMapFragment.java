@@ -26,9 +26,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
  */
 public class MainMapFragment extends SupportMapFragment implements OnMapReadyCallback, GoogleMap.InfoWindowAdapter, GoogleMap.OnInfoWindowClickListener {
 
-    public static final String TAG = "MapFragment.TAG";
-    private final double mOfficialLat = 28.590647;
-    private final double mOfficialLong = -81.304510;
+
+    private final double mStartLat = 36.898835;
+    private final double mStartLong = -76.090170;
 
     private GoogleMap mMap;
 
@@ -48,35 +48,43 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
         getMapAsync(this);
     }
 
+    // do initial map set up when the map is ready
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setMapType(mMap.MAP_TYPE_SATELLITE);
         mMap.setInfoWindowAdapter(this);
         mMap.setOnInfoWindowClickListener(this);
 
         zoomInCamera();
         addMapMarker();
     }
+
+    // TODO: change method to accept user input
+    // add marker to the map ...
     private void addMapMarker(){
         if(mMap == null){
             return;
         }
 
         MarkerOptions options = new MarkerOptions();
-        options.title("Fullsail university");
-        options.snippet("Building 4");
+        options.title("Grassy Island");
+        options.snippet("Lynnhaven River");
 
-        LatLng officalLocation = new LatLng(mOfficialLat,mOfficialLong);
+        LatLng officalLocation = new LatLng(mStartLat,mStartLong);
         options.position(officalLocation);
 
         mMap.addMarker(options);
     }
+
+    // TODO: change method to zoom on list view click
+    // zoom in a specific map location..
     private void zoomInCamera(){
         if(mMap == null){
             return;
         }
 
-        LatLng officalLocation = new LatLng(mOfficialLat,mOfficialLong);
+        LatLng officalLocation = new LatLng(mStartLat,mStartLong);
         CameraUpdate cameraMovement = CameraUpdateFactory.newLatLngZoom(officalLocation, 16);
         mMap.animateCamera(cameraMovement);
     }
@@ -84,6 +92,7 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
     @Override
     public View getInfoWindow(Marker marker) { return null;}
 
+    // inflate info window layout set text views to marker properties
     @Override
     public View getInfoContents(Marker marker) {
         View contents = LayoutInflater.from(getActivity()).inflate(R.layout.info_window, null);
@@ -93,6 +102,7 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
         return contents;
     }
 
+    // handle marker/ info window click click
     @Override
     public void onInfoWindowClick(Marker marker) {
 
