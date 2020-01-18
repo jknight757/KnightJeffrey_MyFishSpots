@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fragments.SignUpFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textSize="30sp"
+            android:text="@string/new_user"/>
+
+        <EditText
+            android:id="@+id/username_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/email"/>
+        <EditText
+            android:id="@+id/username_input2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/re_enter_email"/>
+
+        <EditText
+            android:id="@+id/password_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/password"/>
+
+
+        <Button
+            android:id="@+id/btn_signup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sign_up"/>
+
+    </LinearLayout>
+
+</FrameLayout>

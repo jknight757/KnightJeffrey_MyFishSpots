@@ -7,5 +7,5 @@ public class FishCaught {
     private String imgPath;
     private double length;
     private double weight;
-    
+
 }

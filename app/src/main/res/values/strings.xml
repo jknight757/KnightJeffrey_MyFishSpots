@@ -8,4 +8,7 @@
     <string name="log_in">Log In</string>
     <string name="sign_up">Sign Up</string>
     <string name="my_fish_spots">My Fish Spots</string>
+    <string name="new_user">New User</string>
+    <string name="email">Email</string>
+    <string name="re_enter_email">Re-enter Email</string>
 </resources>
