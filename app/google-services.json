@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "647086664827",
+    "firebase_url": "https://pp6-fishing-spot-1579026681066.firebaseio.com",
+    "project_id": "pp6-fishing-spot-1579026681066",
+    "storage_bucket": "pp6-fishing-spot-1579026681066.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:647086664827:android:5fc5349b9fc7a8421e86de",
+        "android_client_info": {
+          "package_name": "com.example.knightjeffrey_myfishspots"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "647086664827-spr074npl88ndkjq9ddjtaqi90p5qo77.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.knightjeffrey_myfishspots",
+            "certificate_hash": "cd5ab933b27874ce28521a7b62d3a4728f0c7749"
+          }
+        },
+        {
+          "client_id": "647086664827-gq0b2pjma9vfh3homfkiga6hf5m9efuc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQaOu6EwiAN91XikDjngzmmz9k-fl0HoI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "647086664827-gq0b2pjma9vfh3homfkiga6hf5m9efuc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

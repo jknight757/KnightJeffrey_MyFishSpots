@@ -4,6 +4,7 @@ package com.example.knightjeffrey_myfishspots.fragments;
 import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
@@ -17,6 +18,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.knightjeffrey_myfishspots.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -30,6 +36,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
     EditText passwordInput;
     
     LoginListener listener;
+    private FirebaseAuth mAuth;
 
 
     public LoginFragment() {
@@ -69,7 +76,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
         super.onActivityCreated(savedInstanceState);
         
         if(getView()!= null) {
-            
+            mAuth = FirebaseAuth.getInstance();
             // access UI components
             emailInput = getView().findViewById(R.id.username_input);
             passwordInput = getView().findViewById(R.id.password_input);
@@ -88,7 +95,24 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
         switch (v.getId()){
             case R.id.btn_login:
                 if(validateInput()){
-                    listener.LoginGranted();
+
+                    FirebaseUser currentUser = mAuth.getCurrentUser();
+
+                    if(currentUser == null && getActivity() != null){
+                        mAuth.signInWithEmailAndPassword(email,password).addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if(task.isSuccessful()){
+                                    Toast.makeText(getContext(),"Login Successful",Toast.LENGTH_SHORT).show();
+
+                                    listener.LoginGranted();
+                                }else{
+                                    Toast.makeText(getContext(),"Invalid Email or Password", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+                    }
+
                 }
                 break;
             case R.id.btn_signup:
@@ -99,15 +123,18 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
     
     // TODO: validate login through firebase
     public boolean validateInput(){
+        Toast.makeText(getContext(),"Validating Login...",Toast.LENGTH_SHORT).show();
         boolean isValid = false;
-        String input1 = emailInput.getText().toString();
-        String input2 = passwordInput.getText().toString();
+        email = emailInput.getText().toString();
+        password = passwordInput.getText().toString();
 
-        if(!input1.isEmpty() && !input2.isEmpty()){
+        if(!email.isEmpty() && !password.isEmpty()){
             isValid = true;
-            
+            Toast.makeText(getContext(),"Login valid",Toast.LENGTH_SHORT).show();
+
+
         }else{
-            if(input1.isEmpty()){
+            if(email.isEmpty()){
                 Toast.makeText(getContext(),"Enter Email", Toast.LENGTH_SHORT).show(); 
             }else{
                 Toast.makeText(getContext(),"Enter Password", Toast.LENGTH_SHORT).show();

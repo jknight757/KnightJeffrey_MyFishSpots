@@ -24,17 +24,33 @@ import com.google.android.gms.maps.model.MarkerOptions;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MainMapFragment extends SupportMapFragment implements OnMapReadyCallback, GoogleMap.InfoWindowAdapter, GoogleMap.OnInfoWindowClickListener {
+public class MainMapFragment extends SupportMapFragment implements OnMapReadyCallback, GoogleMap.InfoWindowAdapter, GoogleMap.OnInfoWindowClickListener, View.OnClickListener {
 
 
     private final double mStartLat = 36.898835;
     private final double mStartLong = -76.090170;
 
+    private static final int HOME_SCREEN_STATE = 0005;
+    private static final int ADD_NEW_STATE = 0006;
+    private static final String STATE_KEY = "STATE_KEY";
+    private int currentState;
+
+
     private GoogleMap mMap;
 
-    public static MainMapFragment newInstance() {
+    public static MainMapFragment newInstance(int state) {
 
         Bundle args = new Bundle();
+        MainMapFragment fragment = new MainMapFragment();
+        args.putInt(STATE_KEY,state);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    public static MainMapFragment newInstance(int state, double _lat, double _long) {
+
+        Bundle args = new Bundle();
+
         MainMapFragment fragment = new MainMapFragment();
         fragment.setArguments(args);
         return fragment;
@@ -44,8 +60,22 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
     @Override
     public void onActivityCreated(Bundle bundle) {
         super.onActivityCreated(bundle);
-
         getMapAsync(this);
+
+        if(getArguments() != null){
+            switch (getArguments().getInt(STATE_KEY)){
+                case HOME_SCREEN_STATE:
+                    currentState = HOME_SCREEN_STATE;
+                    zoomInCamera();
+                    break;
+                case ADD_NEW_STATE:
+                    currentState = ADD_NEW_STATE;
+                    break;
+            }
+
+
+
+        }
     }
 
     // do initial map set up when the map is ready
@@ -56,13 +86,16 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
         mMap.setInfoWindowAdapter(this);
         mMap.setOnInfoWindowClickListener(this);
 
-        zoomInCamera();
-        addMapMarker();
+        if(currentState == HOME_SCREEN_STATE){
+            addMapMarker(mStartLat, mStartLong);
+            zoomInCamera();
+        }
+
     }
 
     // TODO: change method to accept user input
     // add marker to the map ...
-    private void addMapMarker(){
+    private void addMapMarker(double searchLat, double searchLong){
         if(mMap == null){
             return;
         }
@@ -71,7 +104,7 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
         options.title("Grassy Island");
         options.snippet("Lynnhaven River");
 
-        LatLng officalLocation = new LatLng(mStartLat,mStartLong);
+        LatLng officalLocation = new LatLng(searchLat,searchLong);
         options.position(officalLocation);
 
         mMap.addMarker(options);
@@ -105,6 +138,11 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
     // handle marker/ info window click click
     @Override
     public void onInfoWindowClick(Marker marker) {
+
+    }
+
+    @Override
+    public void onClick(View v) {
 
     }
 }
