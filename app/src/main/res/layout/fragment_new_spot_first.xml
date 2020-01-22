@@ -3,12 +3,43 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.NewSpotFirst">
+    tools:context=".fragments.NewSpotDetail">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/name_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Give this spot a name"/>
+        <TextView
+            android:id="@+id/coordinate_output"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Coordinate"
+            android:textAlignment="center" />
+        <Button
+            android:id="@+id/change_location_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/change"
+            android:textSize="12sp"/>
+        <EditText
+            android:id="@+id/description_input"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:hint="@string/description"/>
+
+        <Button
+            android:id="@+id/add_spot_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/add_spot" />
+
+
+    </LinearLayout>
 
 </FrameLayout>

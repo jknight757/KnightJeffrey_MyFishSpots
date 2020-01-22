@@ -1,6 +1,7 @@
 package com.example.knightjeffrey_myfishspots.fragments;
 
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -42,6 +43,7 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
     private static final String LONG_KEY = "LONG_KEY";
     private int currentState;
 
+    private LatLongListener listener;
 
     private GoogleMap mMap;
 
@@ -67,6 +69,17 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
         return fragment;
     }
 
+    public interface LatLongListener{
+        void longPress(LatLng location);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if(context instanceof LatLongListener){
+            listener = (LatLongListener) context;
+        }
+    }
 
     @Override
     public void onActivityCreated(Bundle bundle) {
@@ -172,6 +185,7 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
         if(currentMarker != null){
            currentMarker.remove();
         }
+        listener.longPress(latLng);
         addMapMarker(latLng.latitude,latLng.longitude);
         zoomInCamera(latLng.latitude,latLng.longitude);
 

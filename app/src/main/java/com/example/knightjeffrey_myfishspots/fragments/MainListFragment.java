@@ -1,7 +1,9 @@
 package com.example.knightjeffrey_myfishspots.fragments;
 
 
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -16,10 +18,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.knightjeffrey_myfishspots.R;
 import com.example.knightjeffrey_myfishspots.activities.AddAndViewActivity;
 import com.example.knightjeffrey_myfishspots.activities.MainActivity;
+import com.example.knightjeffrey_myfishspots.models.DataBaseAdapter;
+import com.example.knightjeffrey_myfishspots.models.DataBaseHelper;
 
 import java.util.ArrayList;
 
@@ -28,6 +33,8 @@ import java.util.ArrayList;
  */
 public class MainListFragment extends ListFragment {
 
+    MenuClickListener listener;
+    Cursor cursor;
 
     public MainListFragment() {
         // Required empty public constructor
@@ -41,11 +48,22 @@ public class MainListFragment extends ListFragment {
         fragment.setArguments(args);
         return fragment;
     }
+    public interface MenuClickListener{
+        void addClicked();
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if(context instanceof MenuClickListener){
+            listener = (MenuClickListener) context;
+        }
     }
 
     @Override
@@ -65,11 +83,11 @@ public class MainListFragment extends ListFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if(item.getItemId() == R.id.add_new){
-            Intent addIntent = new Intent(getContext(), AddAndViewActivity.class);
-            startActivityForResult(addIntent, 001);
+            listener.addClicked();
         }
         return super.onOptionsItemSelected(item);
     }
+
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -77,16 +95,14 @@ public class MainListFragment extends ListFragment {
         if(getContext() != null){
             ListView listView = getView().findViewById(android.R.id.list);
 
-            if(listView != null){
-                ArrayList<String> mockList = new ArrayList<>();
-                mockList.add("Honey Hole");
-                mockList.add("Ship Wreck");
-                ArrayList<String> mockList2 = new ArrayList<>();
-                mockList2.add("12,0457584, -13,047343");
-                mockList2.add("75,6475532, -68,756384");
+            DataBaseHelper dbh = DataBaseHelper.getInstance(getContext());
+            cursor = dbh.getAll();
 
-                ArrayAdapter<String> adapter = new ArrayAdapter(getContext(), android.R.layout.simple_list_item_1,mockList);
+            if(cursor.getCount() > 0){
+                DataBaseAdapter adapter = new DataBaseAdapter(getContext(), cursor);
                 listView.setAdapter(adapter);
+            }else{
+                Toast.makeText(getContext(),"No Stored Spots", Toast.LENGTH_SHORT).show();
             }
         }
     }

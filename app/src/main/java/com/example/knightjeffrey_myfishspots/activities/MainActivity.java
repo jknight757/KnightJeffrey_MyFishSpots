@@ -1,8 +1,12 @@
 package com.example.knightjeffrey_myfishspots.activities;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.knightjeffrey_myfishspots.R;
 import com.example.knightjeffrey_myfishspots.fragments.LoginFragment;
@@ -12,7 +16,7 @@ import com.example.knightjeffrey_myfishspots.fragments.SignUpFragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class MainActivity extends AppCompatActivity implements LoginFragment.LoginListener, SignUpFragment.SignUpListener {
+public class MainActivity extends AppCompatActivity implements LoginFragment.LoginListener, SignUpFragment.SignUpListener, MainListFragment.MenuClickListener {
 
     LoginFragment fragmentLogin;
     SignUpFragment fragmentSignUp;
@@ -23,8 +27,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.i("TAG", "onCreate: ");
-        //TODO:
+
         mAuth = FirebaseAuth.getInstance();
 
         fragmentLogin = LoginFragment.newInstance();
@@ -91,5 +94,25 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
 
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.list_fragment_container, MainListFragment.newInstance(),null).commit();
+    }
+
+    @Override
+    public void addClicked() {
+        Intent addIntent = new Intent(this, AddAndViewActivity.class);
+        startActivityForResult(addIntent, 001);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Toast.makeText(this,"Made It Back To Main Activity",Toast.LENGTH_SHORT).show();
+        // add new fragment
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.map_fragment_container, MainMapFragment.newInstance(HOME_SCREEN_STATE),null).commit();
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.list_fragment_container, MainListFragment.newInstance(),null).commit();
+
     }
 }

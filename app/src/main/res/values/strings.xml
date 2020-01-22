@@ -12,4 +12,7 @@
     <string name="email">Email</string>
     <string name="re_enter_email">Re-enter Email</string>
     <string name="search">Search</string>
+    <string name="add_spot">Add Spot</string>
+    <string name="change">Change</string>
+    <string name="description">Description</string>
 </resources>
