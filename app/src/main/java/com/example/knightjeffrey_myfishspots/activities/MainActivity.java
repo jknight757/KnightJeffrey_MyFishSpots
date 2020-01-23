@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.example.knightjeffrey_myfishspots.R;
@@ -15,15 +16,18 @@ import com.example.knightjeffrey_myfishspots.fragments.LoginFragment;
 import com.example.knightjeffrey_myfishspots.fragments.MainListFragment;
 import com.example.knightjeffrey_myfishspots.fragments.MainMapFragment;
 import com.example.knightjeffrey_myfishspots.fragments.SignUpFragment;
+import com.example.knightjeffrey_myfishspots.fragments.SpotDetail;
 import com.example.knightjeffrey_myfishspots.models.DataBaseHelper;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class MainActivity extends AppCompatActivity implements LoginFragment.LoginListener, SignUpFragment.SignUpListener, MainListFragment.MenuClickListener {
+public class MainActivity extends AppCompatActivity implements LoginFragment.LoginListener, SignUpFragment.SignUpListener, MainListFragment.MenuClickListener, MainMapFragment.WindowClickListener {
 
     LoginFragment fragmentLogin;
     SignUpFragment fragmentSignUp;
     MainMapFragment mapFragment;
+    MainListFragment listFragment;
 
     private FirebaseAuth mAuth;
     FirebaseUser currentUser;
@@ -49,8 +53,9 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.map_fragment_container, mapFragment,MainMapFragment.TAG).commit();
 
+            listFragment = MainListFragment.newInstance();
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.list_fragment_container, MainListFragment.newInstance(),null).commit();
+                    .add(R.id.list_fragment_container, listFragment,MainListFragment.TAG).commit();
         }
 
 
@@ -77,8 +82,9 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.map_fragment_container, mapFragment, MainMapFragment.TAG).commit();
 
+        listFragment = MainListFragment.newInstance();
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.list_fragment_container, MainListFragment.newInstance(),null).commit();
+                .replace(R.id.list_fragment_container, listFragment, MainListFragment.TAG).commit();
     }
 
     @Override
@@ -104,8 +110,9 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.map_fragment_container, mapFragment, MainMapFragment.TAG).commit();
 
+        listFragment = MainListFragment.newInstance();
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.list_fragment_container, MainListFragment.newInstance(),null).commit();
+                .replace(R.id.list_fragment_container, listFragment, MainListFragment.TAG).commit();
     }
 
     @Override
@@ -126,6 +133,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
         String longStr = cursor.getString(cursor.getColumnIndex(DataBaseHelper.COLUMN_LONGITUDE));
         Double latitude = Double.parseDouble(latStr);
         Double longitude = Double.parseDouble(longStr);
+
 
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(MainMapFragment.TAG);
         if(fragment instanceof MainMapFragment){
@@ -151,11 +159,25 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.map_fragment_container, mapFragment, MainMapFragment.TAG).commit();
 
+                listFragment = MainListFragment.newInstance();
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.list_fragment_container, MainListFragment.newInstance(), null).commit();
+                        .replace(R.id.list_fragment_container, listFragment, MainListFragment.TAG).commit();
 
             }
         }
 
+    }
+
+    
+    @Override
+    public void windowClicked(int id) {
+        // remove old fragment
+        getSupportFragmentManager().beginTransaction()
+                .remove(mapFragment).commit();
+
+        getSupportFragmentManager().beginTransaction()
+                .remove(listFragment).commit();
+
+         getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, SpotDetail.newInstance(id),null).commit();
     }
 }

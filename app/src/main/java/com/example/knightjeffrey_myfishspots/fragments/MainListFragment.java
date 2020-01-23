@@ -33,6 +33,8 @@ import java.util.ArrayList;
  */
 public class MainListFragment extends ListFragment {
 
+    public static final String TAG = "MainListFragment.TAG";
+
     MenuClickListener listener;
     Cursor cursor;
 

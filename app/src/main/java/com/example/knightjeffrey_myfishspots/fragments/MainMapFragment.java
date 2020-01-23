@@ -24,6 +24,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -41,7 +43,9 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
     String latStr;
     String longStr;
 
+
     private Marker currentMarker;
+    private ArrayList<Marker> markers;
 
     private static final int HOME_SCREEN_STATE = 10;
     private static final int ADD_STATE_START = 20;
@@ -55,6 +59,7 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
     private int currentState;
 
     private LatLongListener listener;
+    private WindowClickListener windowListener;
 
     private GoogleMap mMap;
 
@@ -92,13 +97,23 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
 
     public interface LatLongListener{
         void longPress(LatLng location);
+
+    }
+
+    public interface WindowClickListener{
+        void windowClicked(int id);
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if(context instanceof LatLongListener){
+
             listener = (LatLongListener) context;
+
+        }else if(context instanceof WindowClickListener){
+
+            windowListener = (WindowClickListener)context;
         }
     }
 
@@ -109,6 +124,9 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
 
 
         if(getArguments() != null){
+
+            markers = new ArrayList<>();
+
             switch (getArguments().getInt(STATE_KEY)){
                 case HOME_SCREEN_STATE:
                     currentState = HOME_SCREEN_STATE;
@@ -150,7 +168,8 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
                 longStr = cursor.getString(cursor.getColumnIndex(DataBaseHelper.COLUMN_LONGITUDE));
                 Double latitude = Double.parseDouble(latStr);
                 Double longitude = Double.parseDouble(longStr);
-                addMapMarker(latitude, longitude, name);
+                locationID = cursor.getInt(cursor.getColumnIndex(DataBaseHelper.COLUMN_ID));
+                addMapMarker(latitude, longitude, name, locationID);
                 cursor.moveToNext();
             }
 
@@ -210,7 +229,7 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
 
         currentMarker = mMap.addMarker(options);
     }
-    private void addMapMarker(Double storedLat, Double storedLong, String name){
+    private void addMapMarker(Double storedLat, Double storedLong, String name, int _id){
         if(mMap == null){
             return;
         }
@@ -218,8 +237,10 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
         options.title(name);
         LatLng officalLocation = new LatLng(storedLat,storedLong);
         options.position(officalLocation);
-
         currentMarker = mMap.addMarker(options);
+        currentMarker.setTag(_id);
+        markers.add(currentMarker);
+
 
     }
 
@@ -261,7 +282,24 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
             case ADD_STATE_START:
                 marker.hideInfoWindow();
                 break;
+            case HOME_SCREEN_STATE:
+                getMarkerTag(marker);
+
+                break;
+            case ADDED_HOME_STATE:
+                getMarkerTag(marker);
+                break;
         }
+    }
+
+    public void getMarkerTag(Marker marker){
+
+        Marker clickedMarker = markers.get(markers.indexOf(marker));
+
+        int id = (int)clickedMarker.getTag();
+        Toast.makeText(getContext(), "Marker ID: " + id,Toast.LENGTH_SHORT).show();
+        windowListener.windowClicked(id);
+
     }
 
 
