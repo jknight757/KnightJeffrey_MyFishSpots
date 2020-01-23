@@ -50,6 +50,7 @@ public class MainListFragment extends ListFragment {
     }
     public interface MenuClickListener{
         void addClicked();
+        void listItemClicked(int _id);
     }
 
     @Override
@@ -111,6 +112,15 @@ public class MainListFragment extends ListFragment {
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
 
+        DataBaseHelper dbh = DataBaseHelper.getInstance(getContext());
+        cursor = dbh.getAll();
+
+        if(cursor.getPosition() == 0){
+            cursor.moveToPosition(position);
+        }
+
+        int _id = cursor.getInt(cursor.getColumnIndex(DataBaseHelper.COLUMN_ID));
+        listener.listItemClicked(_id);
 
     }
 }

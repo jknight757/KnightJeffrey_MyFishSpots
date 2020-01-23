@@ -31,9 +31,9 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
     Double longitude;
 
     private FirebaseAuth mAuth;
-    private static final int ADD_STATE_START = 0006;
-    private static final int ADD_STATE_SEARCH = 0007;
-    private static final String ID_KEY = "ID_KEY";
+    private static final int ADD_STATE_START = 20;
+    private static final int ADD_STATE_SEARCH = 30;
+    private static final String EXTRA_ID = "EXTRA_ID";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,12 +102,13 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
             String userID = currentUser.getUid();
             dbh.insertLocation(spot, userID);
 
-//            Cursor c = dbh.getAll();
-//            c.moveToLast();
-//            int id = c.getInt(c.getColumnIndex(DataBaseHelper.COLUMN_ID));
-//            spot.setLocationId(id);
+            Cursor c = dbh.getAll();
+            c.moveToLast();
+            int id = c.getInt(c.getColumnIndex(DataBaseHelper.COLUMN_ID));
+
 
             Intent resultIntent = new Intent();
+            resultIntent.putExtra(EXTRA_ID,id);
             setResult(RESULT_OK, resultIntent);
             finish();
         }
