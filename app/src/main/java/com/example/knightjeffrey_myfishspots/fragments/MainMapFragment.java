@@ -89,6 +89,7 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
         fragment.setArguments(args);
         return fragment;
     }
+
     public interface LatLongListener{
         void longPress(LatLng location);
     }
@@ -201,8 +202,8 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
         }
 
         MarkerOptions options = new MarkerOptions();
-        options.title("Grassy Island");
-        options.snippet("Lynnhaven River");
+        String coordinateStr = searchLat+ ", " + searchLong;
+        options.title(coordinateStr);
 
         LatLng officalLocation = new LatLng(searchLat,searchLong);
         options.position(officalLocation);
@@ -222,10 +223,8 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
 
     }
 
-
-
     // zoom in a specific map location..
-    private void zoomInCamera(Double searchLat, Double searchLong){
+    public void zoomInCamera(Double searchLat, Double searchLong){
         if(mMap == null){
             return;
         }
@@ -241,19 +240,35 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
     // inflate info window layout set text views to marker properties
     @Override
     public View getInfoContents(Marker marker) {
-        View contents = LayoutInflater.from(getActivity()).inflate(R.layout.info_window, null);
 
-        ((TextView)contents.findViewById(R.id.title)).setText(marker.getTitle());
-        ((TextView)contents.findViewById(R.id.snippet)).setText(marker.getSnippet());
-        return contents;
+            View contents = LayoutInflater.from(getActivity()).inflate(R.layout.info_window, null);
+
+            ((TextView) contents.findViewById(R.id.title)).setText(marker.getTitle());
+            ((TextView) contents.findViewById(R.id.snippet)).setText(marker.getSnippet());
+
+            return contents;
+
     }
 
     // handle marker/ info window click click
     @Override
     public void onInfoWindowClick(Marker marker) {
 
+        switch (currentState){
+            case ADD_STATE_SEARCH:
+                marker.hideInfoWindow();
+                break;
+            case ADD_STATE_START:
+                marker.hideInfoWindow();
+                break;
+        }
     }
 
+
+
+    // when the map is long clicked a marker is added at that location
+    // previous marker is removed
+    // map zooms on new marker
     @Override
     public void onMapLongClick(LatLng latLng) {
         if(currentMarker != null){

@@ -35,6 +35,10 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
     private static final int ADD_STATE_SEARCH = 30;
     private static final String EXTRA_ID = "EXTRA_ID";
 
+    private boolean editLocation = false;
+    private String savedName;
+    private String savedDescrip;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,7 +78,13 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
                 if(latitude != null && longitude != null){
                     firstLayout.setVisibility(View.GONE);
                     nextLayout.setVisibility(View.GONE);
-                    newSpotDetailFragment = NewSpotDetail.newInstance(latitude,longitude);
+
+                    if(editLocation){
+                        newSpotDetailFragment = NewSpotDetail.newInstance(savedName, savedDescrip,latitude ,longitude);
+                        editLocation = false;
+                    }else {
+                        newSpotDetailFragment = NewSpotDetail.newInstance(latitude,longitude);
+                    }
                     getSupportFragmentManager().beginTransaction()
                             .add(R.id.top_level_container, newSpotDetailFragment, NewSpotDetail.TAG).commit();
                 }
@@ -91,14 +101,11 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
     @Override
     public void confirmAdd(FishSpots spot) {
 
-        Toast.makeText(this,"2 back at activity",Toast.LENGTH_SHORT).show();
-
         DataBaseHelper dbh = DataBaseHelper.getInstance(this);
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
 
         if(currentUser != null) {
-            Toast.makeText(this,"3 user Logged In",Toast.LENGTH_SHORT).show();
             String userID = currentUser.getUid();
             dbh.insertLocation(spot, userID);
 
@@ -116,7 +123,11 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
     }
 
     @Override
-    public void newLatLong() {
+    public void newLatLong(String name, String description) {
+        savedName = name;
+        savedDescrip = description;
+        editLocation = true;
+
         getSupportFragmentManager().beginTransaction().remove(newSpotDetailFragment).commit();
         firstLayout.setVisibility(View.VISIBLE);
         nextLayout.setVisibility(View.VISIBLE);

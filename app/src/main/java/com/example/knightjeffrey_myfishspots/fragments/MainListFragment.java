@@ -80,6 +80,10 @@ public class MainListFragment extends ListFragment {
         inflater.inflate(R.menu.menu_home_main,menu);
     }
 
+    // menu bar items for homescreen are handled here
+    // this is because other fragments that share the same activity as this fragment might not be a
+    // screen that should have the menu bar items
+    // this fragment is only used on the homescreen so handling menu bar interactions here is valid
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -90,6 +94,8 @@ public class MainListFragment extends ListFragment {
     }
 
 
+    // create list view, retrieve all items from database
+    //  pass cursor to adapter and set adapter to list view
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -108,19 +114,23 @@ public class MainListFragment extends ListFragment {
         }
     }
 
+    // get database row at the position of the item clicked in the list
+    // get id from selected row and pass id back to activity
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
 
-        DataBaseHelper dbh = DataBaseHelper.getInstance(getContext());
-        cursor = dbh.getAll();
+          DataBaseHelper dbh = DataBaseHelper.getInstance(getContext());
+          cursor = dbh.getAll();
 
-        if(cursor.getPosition() == 0){
-            cursor.moveToPosition(position);
-        }
+          if(cursor.getPosition() < 0){
+             cursor.moveToFirst();
+             cursor.move(position);
+          }
 
-        int _id = cursor.getInt(cursor.getColumnIndex(DataBaseHelper.COLUMN_ID));
-        listener.listItemClicked(_id);
+          int idIndex = cursor.getColumnIndex(DataBaseHelper.COLUMN_ID);
+          int _id = cursor.getInt(idIndex);
+          listener.listItemClicked(_id);
 
     }
 }

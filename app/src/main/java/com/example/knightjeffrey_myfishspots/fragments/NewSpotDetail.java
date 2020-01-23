@@ -30,12 +30,16 @@ public class NewSpotDetail extends Fragment implements View.OnClickListener {
     public static final String TAG = "NewSpotDetail.TAG";
     private static final String LAT_KEY = "LAT_KEY";
     private static final String LONG_KEY = "LONG_KEY";
+    private static final String NAME_KEY = "NAME_KEY";
+    private static final String DESCRIP_KEY = "DESCRIP_KEY";
 
     Double latitude;
     Double longitude;
 
     EditText spotName;
     EditText spotDescription;
+    private String savedName;
+    private String savedDescrip;
 
     DetailListener listener;
 
@@ -53,9 +57,21 @@ public class NewSpotDetail extends Fragment implements View.OnClickListener {
         return fragment;
     }
 
+    public static NewSpotDetail newInstance(String name, String description,Double latitude, Double longitude) {
+
+        Bundle args = new Bundle();
+        args.putString(NAME_KEY,name);
+        args.putString(DESCRIP_KEY,description);
+        args.putDouble(LAT_KEY, latitude);
+        args.putDouble(LONG_KEY, longitude);
+        NewSpotDetail fragment = new NewSpotDetail();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     public interface DetailListener{
         void confirmAdd(FishSpots spot);
-        void newLatLong();
+        void newLatLong(String name, String description);
     }
 
     @Override
@@ -79,6 +95,8 @@ public class NewSpotDetail extends Fragment implements View.OnClickListener {
 
         if(getArguments() != null && getView() != null){
 
+            savedName = getArguments().getString(NAME_KEY);
+            savedDescrip = getArguments().getString(DESCRIP_KEY);
             latitude = getArguments().getDouble(LAT_KEY);
             longitude = getArguments().getDouble(LONG_KEY);
             String latLongStr = latitude + ", "+ longitude;
@@ -89,17 +107,28 @@ public class NewSpotDetail extends Fragment implements View.OnClickListener {
             spotDescription = getView().findViewById(R.id.description_input);
             getView().findViewById(R.id.add_spot_btn).setOnClickListener(this);
             getView().findViewById(R.id.change_location_btn).setOnClickListener(this);
+
+            if(savedName != null){
+                spotName.setText(savedName);
+            }
+
+            if(savedDescrip != null){
+                spotDescription.setText(savedDescrip);
+            }
         }
     }
 
     @Override
     public void onClick(View v) {
 
+        String name = spotName.getText().toString();
+        String description = spotDescription.getText().toString();
+
+
         switch (v.getId()){
             case R.id.add_spot_btn:
-                // get input
-                String name = spotName.getText().toString();
-                String description = spotDescription.getText().toString();
+
+
                 LatLng coordinate = new LatLng(latitude,longitude);
 
                  if(!name.isEmpty()){
@@ -113,24 +142,23 @@ public class NewSpotDetail extends Fragment implements View.OnClickListener {
                      String dateStr = dateFormat.format(date);
                      FishSpots newSpot = new FishSpots(coordinate,name, description, dateStr);
                      listener.confirmAdd(newSpot);
-                     Toast.makeText(getContext(),"1 send to add activity",Toast.LENGTH_SHORT).show();
                  }else{
                      Toast.makeText(getContext(),"Please enter a name",Toast.LENGTH_SHORT).show();
                  }
 
                 break;
             case R.id.change_location_btn:
+                if(name.isEmpty()){
+                    name = null;
+                }
 
+                if(description.isEmpty()){
+                    description = null;
+                }
+                listener.newLatLong(name, description);
                 break;
         }
     }
 
-
-//    public boolean validateInput(){
-//        if(spotName.getText().toString().isEmpty()){
-//            return false;
-//        }
-//        return true;
-//    }
 
 }

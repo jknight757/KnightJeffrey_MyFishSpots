@@ -83,8 +83,9 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     }
 
+    // TODO: query with userID as well as locationID
     //gets certain data based on id
-    public Cursor getLocationByID(Integer _locationID, Integer _userID){
+    public Cursor getLocationByID(Integer _locationID, String _userID){
         /*
         String selection = COLUMN_ID + " = '?'";
         String[] selectionArgs = { _ID.toString()};

@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
         DataBaseHelper dbh = DataBaseHelper.getInstance(this);
         currentUser = mAuth.getCurrentUser();
         String uId = currentUser.getUid();
-        Cursor cursor = dbh.getLocationByID(_id,0);
+        Cursor cursor = dbh.getLocationByID(_id,uId);
 
         cursor.moveToFirst();
         String latStr = cursor.getString(cursor.getColumnIndex(DataBaseHelper.COLUMN_LATITUDE));
@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
         if(fragment instanceof MainMapFragment){
             mapFragment = (MainMapFragment) fragment;
         }
-       // mapFragment.zoomInCamera(latitude,longitude);
+        mapFragment.zoomInCamera(latitude,longitude);
 
 
 
@@ -141,18 +141,20 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        int id = data.getIntExtra(EXTRA_ID,-1);
+        if(resultCode == RESULT_OK) {
 
-        if(id == -1){
 
-        }else{
-            mapFragment = MainMapFragment.newInstance(ADDED_HOME_STATE,id);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.map_fragment_container, mapFragment,MainMapFragment.TAG).commit();
+            int id = data.getIntExtra(EXTRA_ID, -1);
 
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.list_fragment_container, MainListFragment.newInstance(),null).commit();
+            if (id != -1) {
+                mapFragment = MainMapFragment.newInstance(ADDED_HOME_STATE, id);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.map_fragment_container, mapFragment, MainMapFragment.TAG).commit();
 
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.list_fragment_container, MainListFragment.newInstance(), null).commit();
+
+            }
         }
 
     }
