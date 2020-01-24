@@ -16,4 +16,5 @@
     <string name="change">Change</string>
     <string name="description">Description</string>
     <string name="description_filler">This is a description about this saved location. The coordinates are to a location that has been saved by the user because they would like to revisit and fish this spot.</string>
+    <string name="edit">Edit</string>
 </resources>

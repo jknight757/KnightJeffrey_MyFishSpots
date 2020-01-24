@@ -2,6 +2,7 @@ package com.example.knightjeffrey_myfishspots.fragments;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 
@@ -14,28 +15,32 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.knightjeffrey_myfishspots.R;
+import com.example.knightjeffrey_myfishspots.activities.CatchesActivity;
 import com.example.knightjeffrey_myfishspots.models.DataBaseHelper;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class SpotDetail extends Fragment {
+public class SpotDetail extends Fragment implements View.OnClickListener {
 
     public static final String TAG = "SpotDetail.TAG";
     private static final String ID_KEY = "ID_KEY";
 
     private Cursor cursor;
-    private FirebaseAuth mAuth;
-    private FirebaseUser currentUser;
+    FirebaseAuth mAuth;
+    FirebaseUser currentUser;
 
     private TextView nameTV;
     private TextView descripTV;
     private TextView coodinateTV;
+    FloatingActionButton newCatchFAB;
 
     private String name;
     private String description;
@@ -48,6 +53,7 @@ public class SpotDetail extends Fragment {
     public SpotDetail() {
         // Required empty public constructor
     }
+
 
     public interface SpotDetailListener{
         void returnHomeSD();
@@ -96,6 +102,8 @@ public class SpotDetail extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         if(getArguments() != null && getView() != null){
+            newCatchFAB = getView().findViewById(R.id.new_catch_fab);
+            newCatchFAB.setOnClickListener(this);
             int id = getArguments().getInt(ID_KEY);
             queryDatabase(id);
         }
@@ -110,6 +118,19 @@ public class SpotDetail extends Fragment {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.new_catch_fab:
+                Intent catchesIntent = new Intent(getActivity(), CatchesActivity.class);
+                startActivity(catchesIntent);
+                break;
+            case R.id.edit_btn:
+                break;
+        }
+
     }
 
     private void queryDatabase(int id){

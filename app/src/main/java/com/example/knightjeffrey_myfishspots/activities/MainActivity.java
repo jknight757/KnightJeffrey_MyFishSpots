@@ -7,9 +7,6 @@ import androidx.fragment.app.Fragment;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
 
 import com.example.knightjeffrey_myfishspots.R;
 import com.example.knightjeffrey_myfishspots.fragments.LoginFragment;
@@ -18,7 +15,6 @@ import com.example.knightjeffrey_myfishspots.fragments.MainMapFragment;
 import com.example.knightjeffrey_myfishspots.fragments.SignUpFragment;
 import com.example.knightjeffrey_myfishspots.fragments.SpotDetail;
 import com.example.knightjeffrey_myfishspots.models.DataBaseHelper;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -28,14 +24,17 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
     SignUpFragment fragmentSignUp;
     MainMapFragment mapFragment;
     MainListFragment listFragment;
-    SpotDetail spotDetailFragment;
+    SpotDetail spotDetail;
 
     private FirebaseAuth mAuth;
     FirebaseUser currentUser;
 
     private static final int HOME_SCREEN_STATE = 10;
     private static final int ADDED_HOME_STATE = 40;
+    private static final int ADD_SPOT_REQUEST_CODE = 001;
     private static final String EXTRA_ID = "EXTRA_ID";
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +42,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
         setContentView(R.layout.activity_main);
 
         mAuth = FirebaseAuth.getInstance();
-
         fragmentLogin = LoginFragment.newInstance();
+
         if(!checkUserLoginState()) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.main_fragment_container, fragmentLogin, LoginFragment.TAG).commit();
@@ -58,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.list_fragment_container, listFragment,MainListFragment.TAG).commit();
         }
+
 
 
     }
@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
     @Override
     public void addClicked() {
         Intent addIntent = new Intent(this, AddAndViewActivity.class);
-        startActivityForResult(addIntent, 001);
+        startActivityForResult(addIntent, ADD_SPOT_REQUEST_CODE);
     }
 
     // call back method, invoked by MainList fragment
@@ -148,15 +148,15 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
 
     }
 
-    // invoked when returning from AddAndViewActivity
+    // invoked when returning from AddAndViewActivity or CatchesActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         switch (resultCode){
             case RESULT_OK:
-                int id = data.getIntExtra(EXTRA_ID, -1);
 
+                int id = data.getIntExtra(EXTRA_ID, -1);
                 if (id != -1) {
                     mapFragment = MainMapFragment.newInstance(ADDED_HOME_STATE, id);
                     getSupportFragmentManager().beginTransaction()
@@ -190,8 +190,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
                 .remove(listFragment).commit();
 
         // add spot detail fragment
-         spotDetailFragment = SpotDetail.newInstance(id);
-         getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, spotDetailFragment,SpotDetail.TAG).commit();
+         spotDetail = SpotDetail.newInstance(id);
+         getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container, spotDetail, SpotDetail.TAG).commit();
     }
 
     // callback method, invoked by the SpotDetail fragment
@@ -200,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
     public void returnHomeSD() {
         // remove spot detail fragment
         getSupportFragmentManager().beginTransaction()
-                .remove(spotDetailFragment).commit();
+                .remove(spotDetail).commit();
 
         refreshHomeScreen();
     }

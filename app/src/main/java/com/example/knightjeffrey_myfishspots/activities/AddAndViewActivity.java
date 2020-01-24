@@ -53,6 +53,7 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
         firstLayout = findViewById(R.id.main_fragment_container);
         nextLayout = findViewById(R.id.btn_next);
         findViewById(R.id.search_btn).setOnClickListener(this);
+
         nextLayout.setOnClickListener(this);
         latInput = findViewById(R.id.lat_input);
         longInput = findViewById(R.id.long_input);
@@ -106,6 +107,7 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
                             .add(R.id.top_level_container, newSpotDetailFragment, NewSpotDetail.TAG).commit();
                 }
                 break;
+
         }
     }
 
