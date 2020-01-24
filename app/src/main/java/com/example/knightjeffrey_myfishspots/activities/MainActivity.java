@@ -22,12 +22,13 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class MainActivity extends AppCompatActivity implements LoginFragment.LoginListener, SignUpFragment.SignUpListener, MainListFragment.MenuClickListener, MainMapFragment.WindowClickListener {
+public class MainActivity extends AppCompatActivity implements LoginFragment.LoginListener, SignUpFragment.SignUpListener, MainListFragment.MenuClickListener, MainMapFragment.WindowClickListener, SpotDetail.SpotDetailListener {
 
     LoginFragment fragmentLogin;
     SignUpFragment fragmentSignUp;
     MainMapFragment mapFragment;
     MainListFragment listFragment;
+    SpotDetail spotDetailFragment;
 
     private FirebaseAuth mAuth;
     FirebaseUser currentUser;
@@ -121,6 +122,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
         startActivityForResult(addIntent, 001);
     }
 
+    // call back method, invoked by MainList fragment
+    // passes location id of clicked list item
     @Override
     public void listItemClicked(int _id) {
         DataBaseHelper dbh = DataBaseHelper.getInstance(this);
@@ -145,39 +148,72 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
 
     }
 
+    // invoked when returning from AddAndViewActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(resultCode == RESULT_OK) {
+        switch (resultCode){
+            case RESULT_OK:
+                int id = data.getIntExtra(EXTRA_ID, -1);
 
+                if (id != -1) {
+                    mapFragment = MainMapFragment.newInstance(ADDED_HOME_STATE, id);
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.map_fragment_container, mapFragment, MainMapFragment.TAG).commit();
 
-            int id = data.getIntExtra(EXTRA_ID, -1);
+                    listFragment = MainListFragment.newInstance();
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.list_fragment_container, listFragment, MainListFragment.TAG).commit();
 
-            if (id != -1) {
-                mapFragment = MainMapFragment.newInstance(ADDED_HOME_STATE, id);
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.map_fragment_container, mapFragment, MainMapFragment.TAG).commit();
-
-                listFragment = MainListFragment.newInstance();
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.list_fragment_container, listFragment, MainListFragment.TAG).commit();
-
-            }
+                }
+                break;
+            case RESULT_CANCELED:
+                refreshHomeScreen();
+                break;
         }
+
 
     }
 
-    
+
+    // call back method, invoked by the MainMap fragment
+    // passes data to and displays SpotDetail fragment
     @Override
     public void windowClicked(int id) {
-        // remove old fragment
+
+        // remove map fragment
         getSupportFragmentManager().beginTransaction()
                 .remove(mapFragment).commit();
-
+        // remove list fragment
         getSupportFragmentManager().beginTransaction()
                 .remove(listFragment).commit();
 
-         getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, SpotDetail.newInstance(id),null).commit();
+        // add spot detail fragment
+         spotDetailFragment = SpotDetail.newInstance(id);
+         getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, spotDetailFragment,SpotDetail.TAG).commit();
+    }
+
+    // callback method, invoked by the SpotDetail fragment
+    // tells activity to display homescreen fragments
+    @Override
+    public void returnHomeSD() {
+        // remove spot detail fragment
+        getSupportFragmentManager().beginTransaction()
+                .remove(spotDetailFragment).commit();
+
+        refreshHomeScreen();
+    }
+
+    public void refreshHomeScreen(){
+
+        // add home screen fragments
+        mapFragment = MainMapFragment.newInstance(HOME_SCREEN_STATE);
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.map_fragment_container, mapFragment, MainMapFragment.TAG).commit();
+
+        listFragment = MainListFragment.newInstance();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.list_fragment_container, listFragment, MainListFragment.TAG).commit();
     }
 }

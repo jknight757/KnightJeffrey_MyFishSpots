@@ -1,10 +1,13 @@
 package com.example.knightjeffrey_myfishspots.activities;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -54,6 +57,20 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
         latInput = findViewById(R.id.lat_input);
         longInput = findViewById(R.id.long_input);
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_go_home,menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        Intent resultIntent = new Intent();
+        setResult(RESULT_CANCELED, resultIntent);
+        finish();
+        return super.onOptionsItemSelected(item);
     }
 
     // when search btn is clicked the edit text inputs are passed to the fragment as coordinates
@@ -132,4 +149,6 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
         firstLayout.setVisibility(View.VISIBLE);
         nextLayout.setVisibility(View.VISIBLE);
     }
+
+
 }

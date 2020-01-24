@@ -38,10 +38,10 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
     private Double searchLat;
     private Double searchLong;
     private int locationID;
-    Cursor cursor;
-    String name;
-    String latStr;
-    String longStr;
+    private Cursor cursor;
+    private String name;
+    private String latStr;
+    private String longStr;
 
 
     private Marker currentMarker;
@@ -235,8 +235,8 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
         }
         MarkerOptions options = new MarkerOptions();
         options.title(name);
-        LatLng officalLocation = new LatLng(storedLat,storedLong);
-        options.position(officalLocation);
+        LatLng officialLocation = new LatLng(storedLat,storedLong);
+        options.position(officialLocation);
         currentMarker = mMap.addMarker(options);
         currentMarker.setTag(_id);
         markers.add(currentMarker);
@@ -250,8 +250,8 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
             return;
         }
 
-        LatLng officalLocation = new LatLng(searchLat,searchLong);
-        CameraUpdate cameraMovement = CameraUpdateFactory.newLatLngZoom(officalLocation, 12);
+        LatLng officialLocation = new LatLng(searchLat,searchLong);
+        CameraUpdate cameraMovement = CameraUpdateFactory.newLatLngZoom(officialLocation, 10);
         mMap.animateCamera(cameraMovement);
     }
 

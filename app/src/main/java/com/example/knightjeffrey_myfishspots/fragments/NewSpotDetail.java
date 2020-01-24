@@ -8,6 +8,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -89,6 +92,7 @@ public class NewSpotDetail extends Fragment implements View.OnClickListener {
         return inflater.inflate(R.layout.fragment_new_spot_first, container, false);
     }
 
+
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -118,17 +122,15 @@ public class NewSpotDetail extends Fragment implements View.OnClickListener {
         }
     }
 
+
     @Override
     public void onClick(View v) {
 
         String name = spotName.getText().toString();
         String description = spotDescription.getText().toString();
 
-
         switch (v.getId()){
             case R.id.add_spot_btn:
-
-
                 LatLng coordinate = new LatLng(latitude,longitude);
 
                  if(!name.isEmpty()){

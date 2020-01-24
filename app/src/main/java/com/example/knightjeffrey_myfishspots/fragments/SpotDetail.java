@@ -9,6 +9,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -26,21 +29,28 @@ public class SpotDetail extends Fragment {
     public static final String TAG = "SpotDetail.TAG";
     private static final String ID_KEY = "ID_KEY";
 
-    Cursor cursor;
+    private Cursor cursor;
     private FirebaseAuth mAuth;
-    FirebaseUser currentUser;
+    private FirebaseUser currentUser;
 
-    TextView nameTV;
-    TextView descripTV;
-    TextView coodinateTV;
+    private TextView nameTV;
+    private TextView descripTV;
+    private TextView coodinateTV;
 
-    String name;
-    String description;
-    Double latitude;
-    Double longitude;
+    private String name;
+    private String description;
+    private Double latitude;
+    private Double longitude;
+
+    SpotDetailListener listener;
+
 
     public SpotDetail() {
         // Required empty public constructor
+    }
+
+    public interface SpotDetailListener{
+        void returnHomeSD();
     }
 
     public static SpotDetail newInstance(int _id) {
@@ -61,8 +71,24 @@ public class SpotDetail extends Fragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        if(context instanceof SpotDetailListener){
+            listener = (SpotDetailListener) context;
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_go_home,menu);
+
     }
 
     @Override
@@ -75,7 +101,18 @@ public class SpotDetail extends Fragment {
         }
     }
 
-    public void queryDatabase(int id){
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()){
+            case R.id.go_home:
+                listener.returnHomeSD();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void queryDatabase(int id){
 
         DataBaseHelper dbh = DataBaseHelper.getInstance(getContext());
         mAuth = FirebaseAuth.getInstance();
