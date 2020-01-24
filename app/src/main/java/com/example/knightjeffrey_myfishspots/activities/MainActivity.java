@@ -13,25 +13,28 @@ import com.example.knightjeffrey_myfishspots.fragments.LoginFragment;
 import com.example.knightjeffrey_myfishspots.fragments.MainListFragment;
 import com.example.knightjeffrey_myfishspots.fragments.MainMapFragment;
 import com.example.knightjeffrey_myfishspots.fragments.SignUpFragment;
-import com.example.knightjeffrey_myfishspots.fragments.SpotDetail;
+import com.example.knightjeffrey_myfishspots.fragments.SpotDetailFragment;
 import com.example.knightjeffrey_myfishspots.models.DataBaseHelper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class MainActivity extends AppCompatActivity implements LoginFragment.LoginListener, SignUpFragment.SignUpListener, MainListFragment.MenuClickListener, MainMapFragment.WindowClickListener, SpotDetail.SpotDetailListener {
+public class MainActivity extends AppCompatActivity implements LoginFragment.LoginListener, SignUpFragment.SignUpListener, MainListFragment.MenuClickListener, MainMapFragment.WindowClickListener, SpotDetailFragment.SpotDetailListener {
 
     LoginFragment fragmentLogin;
     SignUpFragment fragmentSignUp;
     MainMapFragment mapFragment;
     MainListFragment listFragment;
-    SpotDetail spotDetail;
+    SpotDetailFragment spotDetailFragment;
 
     private FirebaseAuth mAuth;
     FirebaseUser currentUser;
 
     private static final int HOME_SCREEN_STATE = 10;
     private static final int ADDED_HOME_STATE = 40;
-    private static final int ADD_SPOT_REQUEST_CODE = 001;
+    private static final int ADD_SPOT_REQUEST_CODE = 99;
+    private static final int ADD_CATCH_REQUEST_CODE = 300;
+    private static final int EDIT_SPOT_REQUEST_CODE = 77;
+
     private static final String EXTRA_ID = "EXTRA_ID";
 
 
@@ -70,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
     }
 
 
-    // interface callback method
+    ///// LOGIN FRAGMENT CALLBACK METHODS /////
     // lets the activity know that the log in request has been granted
     @Override
     public void LoginGranted() {
@@ -99,7 +102,9 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.main_fragment_container,fragmentSignUp,SignUpFragment.TAG).commit();
     }
+    ///// ^^^ LOGIN FRAGMENT CALLBACK METHODS ^^^ /////
 
+    ///// SIGNUP FRAGMENT CALLBACK METHODS /////
     @Override
     public void SignUpGranted() {
         // remove old fragment
@@ -115,14 +120,9 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.list_fragment_container, listFragment, MainListFragment.TAG).commit();
     }
+    ///// ^^^ SIGNUP FRAGMENT CALLBACK METHODS ^^^ /////
 
-    @Override
-    public void addClicked() {
-        Intent addIntent = new Intent(this, AddAndViewActivity.class);
-        startActivityForResult(addIntent, ADD_SPOT_REQUEST_CODE);
-    }
-
-    // call back method, invoked by MainList fragment
+    ///// MAINLIST FRAGMENT CALLBACK METHODS /////
     // passes location id of clicked list item
     @Override
     public void listItemClicked(int _id) {
@@ -144,41 +144,17 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
         }
         mapFragment.zoomInCamera(latitude,longitude);
 
-
-
     }
 
-    // invoked when returning from AddAndViewActivity or CatchesActivity
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        switch (resultCode){
-            case RESULT_OK:
-
-                int id = data.getIntExtra(EXTRA_ID, -1);
-                if (id != -1) {
-                    mapFragment = MainMapFragment.newInstance(ADDED_HOME_STATE, id);
-                    getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.map_fragment_container, mapFragment, MainMapFragment.TAG).commit();
-
-                    listFragment = MainListFragment.newInstance();
-                    getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.list_fragment_container, listFragment, MainListFragment.TAG).commit();
-
-                }
-                break;
-            case RESULT_CANCELED:
-                refreshHomeScreen();
-                break;
-        }
-
-
+    public void addClicked() {
+        Intent addIntent = new Intent(this, AddAndViewActivity.class);
+        startActivityForResult(addIntent, ADD_SPOT_REQUEST_CODE);
     }
+    //// ^^^ MAINLIST FRAGMENT CALLBACK METHODS ^^^ /////
 
-
-    // call back method, invoked by the MainMap fragment
-    // passes data to and displays SpotDetail fragment
+    ///// MAINMAP FRAGMENT CALLBACK METHODS /////
+    // passes data to and displays SpotDetailFragment fragment
     @Override
     public void windowClicked(int id) {
 
@@ -190,19 +166,64 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
                 .remove(listFragment).commit();
 
         // add spot detail fragment
-         spotDetail = SpotDetail.newInstance(id);
-         getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container, spotDetail, SpotDetail.TAG).commit();
+         spotDetailFragment = SpotDetailFragment.newInstance(id);
+         getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container, spotDetailFragment, SpotDetailFragment.TAG).commit();
     }
+    ///// ^^^ MAINMAP FRAGMENT CALLBACK METHODS ^^^ /////
 
-    // callback method, invoked by the SpotDetail fragment
+    ///// SPOT DETAIL FRAGMENT CALLBACK METHODS /////
     // tells activity to display homescreen fragments
     @Override
     public void returnHomeSD() {
         // remove spot detail fragment
         getSupportFragmentManager().beginTransaction()
-                .remove(spotDetail).commit();
+                .remove(spotDetailFragment).commit();
 
         refreshHomeScreen();
+    }
+
+    @Override
+    public void newCatch() {
+        Intent catchesIntent = new Intent(this, CatchesActivity.class);
+        startActivityForResult(catchesIntent,ADD_CATCH_REQUEST_CODE);
+    }
+
+    @Override
+    public void editSpot(int id) {
+        Intent editIntent = new Intent(this, AddAndViewActivity.class);
+        editIntent.putExtra(EXTRA_ID,id);
+        startActivityForResult(editIntent,EDIT_SPOT_REQUEST_CODE);
+
+    }
+    ///// ^^^ SPOT DETAIL FRAGMENT CALLBACK METHODS ^^^ /////
+
+    // invoked when returning from AddAndViewActivity or CatchesActivity
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (resultCode){
+            case RESULT_OK:
+
+                if(requestCode == ADD_SPOT_REQUEST_CODE) {
+                    int id = data.getIntExtra(EXTRA_ID, -1);
+                    if (id != -1) {
+                        mapFragment = MainMapFragment.newInstance(ADDED_HOME_STATE, id);
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.map_fragment_container, mapFragment, MainMapFragment.TAG).commit();
+
+                        listFragment = MainListFragment.newInstance();
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.list_fragment_container, listFragment, MainListFragment.TAG).commit();
+
+                    }
+                }
+                break;
+            case RESULT_CANCELED:
+                refreshHomeScreen();
+                break;
+        }
+
     }
 
     public void refreshHomeScreen(){

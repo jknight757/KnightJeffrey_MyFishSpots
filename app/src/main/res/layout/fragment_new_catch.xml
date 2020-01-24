@@ -5,10 +5,72 @@
     android:layout_height="match_parent"
     tools:context=".fragments.NewCatchFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Add new Catch" />
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add New Catch"
+            android:textSize="30sp"
+            android:textAlignment="center"/>
+
+        <ImageButton
+            android:id="@+id/retrieve_img_btn"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:src="@android:drawable/ic_menu_gallery" />
+
+        <EditText
+            android:id="@+id/species_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Species"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <EditText
+                android:id="@+id/length_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Length"
+                android:layout_weight="1"/>
+            <EditText
+                android:id="@+id/weight_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Weight"
+                android:layout_weight="1"/>
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/lure_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Lure"/>
+
+        <Spinner
+            android:id="@+id/tide_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+        <Spinner
+            android:id="@+id/method_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/add_catch_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add"/>
+
+    </LinearLayout>
+
 
 </FrameLayout>

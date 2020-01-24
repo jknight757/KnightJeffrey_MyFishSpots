@@ -47,8 +47,15 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_and_view);
         //getActionBar().setTitle("New Spot");
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.map_fragment_container, MainMapFragment.newInstance(ADD_STATE_START),null).commit();
+        Intent starterIntent = getIntent();
+
+        if(starterIntent.hasExtra(EXTRA_ID)){
+            
+
+        }else{
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.map_fragment_container, MainMapFragment.newInstance(ADD_STATE_START),null).commit();
+        }
 
         firstLayout = findViewById(R.id.main_fragment_container);
         nextLayout = findViewById(R.id.btn_next);

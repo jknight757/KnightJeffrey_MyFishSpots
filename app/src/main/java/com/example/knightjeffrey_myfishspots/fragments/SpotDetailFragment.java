@@ -15,7 +15,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.knightjeffrey_myfishspots.R;
@@ -28,9 +27,9 @@ import com.google.firebase.auth.FirebaseUser;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class SpotDetail extends Fragment implements View.OnClickListener {
+public class SpotDetailFragment extends Fragment implements View.OnClickListener {
 
-    public static final String TAG = "SpotDetail.TAG";
+    public static final String TAG = "SpotDetailFragment.TAG";
     private static final String ID_KEY = "ID_KEY";
 
     private Cursor cursor;
@@ -46,24 +45,27 @@ public class SpotDetail extends Fragment implements View.OnClickListener {
     private String description;
     private Double latitude;
     private Double longitude;
+    private int locationID;
 
     SpotDetailListener listener;
 
 
-    public SpotDetail() {
+    public SpotDetailFragment() {
         // Required empty public constructor
     }
 
 
     public interface SpotDetailListener{
         void returnHomeSD();
+        void newCatch();
+        void editSpot(int id);
     }
 
-    public static SpotDetail newInstance(int _id) {
+    public static SpotDetailFragment newInstance(int _id) {
 
         Bundle args = new Bundle();
         args.putInt(ID_KEY,_id);
-        SpotDetail fragment = new SpotDetail();
+        SpotDetailFragment fragment = new SpotDetailFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -104,8 +106,8 @@ public class SpotDetail extends Fragment implements View.OnClickListener {
         if(getArguments() != null && getView() != null){
             newCatchFAB = getView().findViewById(R.id.new_catch_fab);
             newCatchFAB.setOnClickListener(this);
-            int id = getArguments().getInt(ID_KEY);
-            queryDatabase(id);
+            locationID = getArguments().getInt(ID_KEY);
+            queryDatabase(locationID);
         }
     }
 
@@ -124,10 +126,10 @@ public class SpotDetail extends Fragment implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.new_catch_fab:
-                Intent catchesIntent = new Intent(getActivity(), CatchesActivity.class);
-                startActivity(catchesIntent);
+                    listener.newCatch();
                 break;
             case R.id.edit_btn:
+                listener.editSpot(locationID);
                 break;
         }
 
