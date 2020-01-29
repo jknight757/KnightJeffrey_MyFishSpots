@@ -3,9 +3,11 @@ package com.example.knightjeffrey_myfishspots.activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,9 +25,14 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
 public class AddAndViewActivity extends AppCompatActivity implements View.OnClickListener, MainMapFragment.LatLongListener, NewSpotDetail.DetailListener {
 
     NewSpotDetail newSpotDetailFragment;
+    MainMapFragment mapFragment;
     FrameLayout firstLayout;
     Button nextLayout;
     EditText latInput;
@@ -33,14 +40,21 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
     Double latitude;
     Double longitude;
 
+    DataBaseHelper dbh;
+    Cursor cursor;
+
     private FirebaseAuth mAuth;
+    FirebaseUser currentUser;
     private static final int ADD_STATE_START = 20;
     private static final int ADD_STATE_SEARCH = 30;
     private static final String EXTRA_ID = "EXTRA_ID";
+    private int locationID;
 
     private boolean editLocation = false;
     private String savedName;
     private String savedDescrip;
+
+    FishSpots spotToEdit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,16 +63,36 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
         //getActionBar().setTitle("New Spot");
         Intent starterIntent = getIntent();
 
-        if(starterIntent.hasExtra(EXTRA_ID)){
-            
-
-        }else{
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.map_fragment_container, MainMapFragment.newInstance(ADD_STATE_START),null).commit();
-        }
-
         firstLayout = findViewById(R.id.main_fragment_container);
         nextLayout = findViewById(R.id.btn_next);
+        if(starterIntent.hasExtra(EXTRA_ID)){
+            locationID = starterIntent.getIntExtra(EXTRA_ID, -1);
+            if(locationID != -1) {
+                spotToEdit = queryDatabase(locationID);
+
+                if (spotToEdit != null) {
+
+                    firstLayout.setVisibility(View.GONE);
+                    nextLayout.setVisibility(View.GONE);
+                    newSpotDetailFragment = NewSpotDetail.newInstance(spotToEdit.getName(),
+                            spotToEdit.getDescription(), spotToEdit.getCoordinate().latitude,
+                            spotToEdit.getCoordinate().longitude);
+                    getSupportFragmentManager().beginTransaction()
+                            .add(R.id.top_level_container,newSpotDetailFragment,NewSpotDetail.TAG ).commit();
+                } else {
+                    Toast.makeText(this, "SPOT NULL", Toast.LENGTH_SHORT).show();
+                }
+            }else{
+                Toast.makeText(this, "ID -1", Toast.LENGTH_SHORT).show();
+            }
+
+        }else{
+            mapFragment = MainMapFragment.newInstance(ADD_STATE_START);
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.map_fragment_container, mapFragment,MainMapFragment.TAG).commit();
+        }
+
+
         findViewById(R.id.search_btn).setOnClickListener(this);
 
         nextLayout.setOnClickListener(this);
@@ -75,6 +109,7 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
         Intent resultIntent = new Intent();
         setResult(RESULT_CANCELED, resultIntent);
         finish();
@@ -94,8 +129,9 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
                     latitude = Double.parseDouble(latStr);
                     longitude = Double.parseDouble(longStr);
 
+                    mapFragment = MainMapFragment.newInstance(ADD_STATE_SEARCH,latitude, longitude);
                     getSupportFragmentManager().beginTransaction()
-                            .add(R.id.map_fragment_container, MainMapFragment.newInstance(ADD_STATE_SEARCH, latitude, longitude), null).commit();
+                            .add(R.id.map_fragment_container, mapFragment,MainMapFragment.TAG).commit();
 
                 }
                 break;
@@ -127,21 +163,33 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
     @Override
     public void confirmAdd(FishSpots spot) {
 
-        DataBaseHelper dbh = DataBaseHelper.getInstance(this);
+        dbh = DataBaseHelper.getInstance(this);
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
 
-        if(currentUser != null) {
+        if (currentUser != null) {
             String userID = currentUser.getUid();
-            dbh.insertLocation(spot, userID);
+            if(spotToEdit != null){
+                ContentValues cv = new ContentValues();
+                cv.put(DataBaseHelper.COLUMN_USER_ID, userID);
+                cv.put(DataBaseHelper.COLUMN_NAME, spot.getName());
+                cv.put(DataBaseHelper.COLUMN_LATITUDE, spot.getCoordinate().latitude);
+                cv.put(DataBaseHelper.COLUMN_LONGITUDE, spot.getCoordinate().longitude);
+                cv.put(DataBaseHelper.COLUMN_DESCRIPTION, spot.getDescription());
+                cv.put(DataBaseHelper.COLUMN_DATE, spot.getDate());
+                dbh.mDatabase.update(DataBaseHelper.TABLE_NAME_FIRST,cv,"_id="+ locationID,null);
 
-            Cursor c = dbh.getAll();
+
+            }else{
+                dbh.insertLocation(spot, userID);
+            }
+
+            Cursor c = dbh.getAllSpots();
             c.moveToLast();
             int id = c.getInt(c.getColumnIndex(DataBaseHelper.COLUMN_ID));
 
-
             Intent resultIntent = new Intent();
-            resultIntent.putExtra(EXTRA_ID,id);
+            resultIntent.putExtra(EXTRA_ID, id);
             setResult(RESULT_OK, resultIntent);
             finish();
         }
@@ -157,6 +205,32 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
         getSupportFragmentManager().beginTransaction().remove(newSpotDetailFragment).commit();
         firstLayout.setVisibility(View.VISIBLE);
         nextLayout.setVisibility(View.VISIBLE);
+    }
+
+    public FishSpots queryDatabase(int id){
+        dbh = DataBaseHelper.getInstance(this);
+        mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser();
+        String uId = currentUser.getUid();
+        cursor = dbh.getLocationByID(id,uId);
+
+        cursor.moveToFirst();
+        String name = cursor.getString(cursor.getColumnIndex(DataBaseHelper.COLUMN_NAME));
+        String description = cursor.getString(cursor.getColumnIndex(DataBaseHelper.COLUMN_DESCRIPTION));
+        String latStr = cursor.getString(cursor.getColumnIndex(DataBaseHelper.COLUMN_LATITUDE));
+        String longStr = cursor.getString(cursor.getColumnIndex(DataBaseHelper.COLUMN_LONGITUDE));
+        Double latitude = Double.parseDouble(latStr);
+        Double longitude = Double.parseDouble(longStr);
+
+        Date date = Calendar.getInstance().getTime();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String dateStr = dateFormat.format(date);
+
+        LatLng coordinate = new LatLng(latitude,longitude);
+
+        return new FishSpots(coordinate,name, description, dateStr);
+
+
     }
 
 

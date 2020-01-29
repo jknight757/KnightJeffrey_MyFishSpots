@@ -9,16 +9,22 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.knightjeffrey_myfishspots.R;
 import com.example.knightjeffrey_myfishspots.activities.CatchesActivity;
+import com.example.knightjeffrey_myfishspots.models.CatchesTableCursorAdapter;
+import com.example.knightjeffrey_myfishspots.models.DataBaseAdapter;
 import com.example.knightjeffrey_myfishspots.models.DataBaseHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
@@ -39,15 +45,28 @@ public class SpotDetailFragment extends Fragment implements View.OnClickListener
     private TextView nameTV;
     private TextView descripTV;
     private TextView coodinateTV;
+    private TextView numCatchTV;
     FloatingActionButton newCatchFAB;
 
+    // Location variables
     private String name;
     private String description;
     private Double latitude;
     private Double longitude;
     private int locationID;
 
+    // Fish variables
+    private String species;
+    private Double length;
+    private Double weight;
+    private String lure;
+    private String tide;
+    private String method;
+    private String imgPath;
+    private String date;
+
     SpotDetailListener listener;
+    ListView listView;
 
 
     public SpotDetailFragment() {
@@ -57,7 +76,7 @@ public class SpotDetailFragment extends Fragment implements View.OnClickListener
 
     public interface SpotDetailListener{
         void returnHomeSD();
-        void newCatch();
+        void newCatch(int id);
         void editSpot(int id);
     }
 
@@ -106,8 +125,11 @@ public class SpotDetailFragment extends Fragment implements View.OnClickListener
         if(getArguments() != null && getView() != null){
             newCatchFAB = getView().findViewById(R.id.new_catch_fab);
             newCatchFAB.setOnClickListener(this);
+            getView().findViewById(R.id.edit_btn).setOnClickListener(this);
             locationID = getArguments().getInt(ID_KEY);
             queryDatabase(locationID);
+
+
         }
     }
 
@@ -126,7 +148,7 @@ public class SpotDetailFragment extends Fragment implements View.OnClickListener
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.new_catch_fab:
-                    listener.newCatch();
+                    listener.newCatch(locationID);
                 break;
             case R.id.edit_btn:
                 listener.editSpot(locationID);
@@ -137,6 +159,7 @@ public class SpotDetailFragment extends Fragment implements View.OnClickListener
 
     private void queryDatabase(int id){
 
+        // get Location data
         DataBaseHelper dbh = DataBaseHelper.getInstance(getContext());
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
@@ -150,6 +173,10 @@ public class SpotDetailFragment extends Fragment implements View.OnClickListener
         String longStr = cursor.getString(cursor.getColumnIndex(DataBaseHelper.COLUMN_LONGITUDE));
         latitude = Double.parseDouble(latStr);
         longitude = Double.parseDouble(longStr);
+
+        // get Catches for this location
+
+        cursor = dbh.getAllForLocation(id, Uid);
         updateUI();
 
     }
@@ -160,13 +187,44 @@ public class SpotDetailFragment extends Fragment implements View.OnClickListener
             nameTV = getView().findViewById(R.id.spot_name_lbl);
             descripTV = getView().findViewById(R.id.description_lbl);
             coodinateTV = getView().findViewById(R.id.coordinate_lbl);
+            numCatchTV = getView().findViewById(R.id.num_catches_lbl);
 
             nameTV.setText(name);
             descripTV.setText(description);
             String coordinateStr = latitude + " ," + longitude;
             coodinateTV.setText(coordinateStr);
+            String numStr = cursor.getCount() + "";
+            numCatchTV.setText(numStr);
+            setUpListView();
 
         }
+    }
+    public void setUpListView(){
+        DataBaseHelper dbh = DataBaseHelper.getInstance(getContext());
+        mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser();
+        String Uid = currentUser.getUid();
 
+        cursor = dbh.getAllForLocation(locationID, Uid);
+
+        if(cursor.getCount() > 0) {
+
+            listView = getView().findViewById(R.id.fish_caught_lv);
+            if (listView != null) {
+
+//                new Handler().post(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        CatchesTableCursorAdapter adapter = new CatchesTableCursorAdapter(getContext(), cursor);
+//                        listView.setAdapter(adapter);
+//                    }
+//                });
+                CatchesTableCursorAdapter adapter = new CatchesTableCursorAdapter(getContext(), cursor);
+                listView.setAdapter(adapter);
+
+            }
+        }else{
+            Toast.makeText(getContext(),"No Stored Spots", Toast.LENGTH_SHORT).show();
+        }
     }
 }

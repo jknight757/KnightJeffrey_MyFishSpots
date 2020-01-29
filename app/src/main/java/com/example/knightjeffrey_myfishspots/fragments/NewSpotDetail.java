@@ -135,7 +135,7 @@ public class NewSpotDetail extends Fragment implements View.OnClickListener {
 
                  if(!name.isEmpty()){
                      if(description.isEmpty()){
-                         description = "No desription";
+                         description = "No description";
                      }
 
                      // get date, format date, create new spot, pass new spot

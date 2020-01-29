@@ -7,11 +7,13 @@ import androidx.fragment.app.Fragment;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.example.knightjeffrey_myfishspots.R;
 import com.example.knightjeffrey_myfishspots.fragments.LoginFragment;
 import com.example.knightjeffrey_myfishspots.fragments.MainListFragment;
 import com.example.knightjeffrey_myfishspots.fragments.MainMapFragment;
+import com.example.knightjeffrey_myfishspots.fragments.NewSpotDetail;
 import com.example.knightjeffrey_myfishspots.fragments.SignUpFragment;
 import com.example.knightjeffrey_myfishspots.fragments.SpotDetailFragment;
 import com.example.knightjeffrey_myfishspots.models.DataBaseHelper;
@@ -34,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
     private static final int ADD_SPOT_REQUEST_CODE = 99;
     private static final int ADD_CATCH_REQUEST_CODE = 300;
     private static final int EDIT_SPOT_REQUEST_CODE = 77;
+    private static final int REQUEST_IMAGE = 0x0010;
 
     private static final String EXTRA_ID = "EXTRA_ID";
 
@@ -46,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
 
         mAuth = FirebaseAuth.getInstance();
         fragmentLogin = LoginFragment.newInstance();
-
+        Log.i("TAG", "Things ................. 2");
         if(!checkUserLoginState()) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.main_fragment_container, fragmentLogin, LoginFragment.TAG).commit();
@@ -183,8 +186,9 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
     }
 
     @Override
-    public void newCatch() {
+    public void newCatch(int id) {
         Intent catchesIntent = new Intent(this, CatchesActivity.class);
+        catchesIntent.putExtra(EXTRA_ID,id);
         startActivityForResult(catchesIntent,ADD_CATCH_REQUEST_CODE);
     }
 
@@ -218,15 +222,43 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
 
                     }
                 }
+                if(requestCode == ADD_CATCH_REQUEST_CODE){
+                    int id = data.getIntExtra(EXTRA_ID, -1);
+                    if(id != -1){
+                        // remove map fragment
+                        getSupportFragmentManager().beginTransaction()
+                                .remove(mapFragment).commit();
+                        // remove list fragment
+                        getSupportFragmentManager().beginTransaction()
+                                .remove(listFragment).commit();
+                        getSupportFragmentManager().beginTransaction()
+                                .remove(spotDetailFragment).commit();
+
+                        // add spot detail fragment
+                        spotDetailFragment = SpotDetailFragment.newInstance(id);
+                        getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container, spotDetailFragment, SpotDetailFragment.TAG).commit();
+                    }
+                }
                 break;
             case RESULT_CANCELED:
-                refreshHomeScreen();
+                if(requestCode == ADD_SPOT_REQUEST_CODE){
+
+                }
+                if(requestCode == EDIT_SPOT_REQUEST_CODE){
+                    getSupportFragmentManager().beginTransaction().remove(spotDetailFragment).commit();
+                    refreshHomeScreen();
+                }
+                if(requestCode == REQUEST_IMAGE){
+
+                }
                 break;
         }
 
     }
 
     public void refreshHomeScreen(){
+
+
 
         // add home screen fragments
         mapFragment = MainMapFragment.newInstance(HOME_SCREEN_STATE);

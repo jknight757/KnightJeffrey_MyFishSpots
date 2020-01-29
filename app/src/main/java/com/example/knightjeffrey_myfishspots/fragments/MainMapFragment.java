@@ -151,7 +151,7 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
     public void queryDataBase(){
 
         DataBaseHelper dbh = DataBaseHelper.getInstance(getContext());
-        cursor = dbh.getAll();
+        cursor = dbh.getAllSpots();
         int x = cursor.getCount();
         if(x > 0){
             cursor.moveToFirst();

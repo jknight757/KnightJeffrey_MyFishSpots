@@ -105,7 +105,7 @@ public class MainListFragment extends ListFragment {
             ListView listView = getView().findViewById(android.R.id.list);
 
             DataBaseHelper dbh = DataBaseHelper.getInstance(getContext());
-            cursor = dbh.getAll();
+            cursor = dbh.getAllSpots();
 
             if(cursor.getCount() > 0){
                 DataBaseAdapter adapter = new DataBaseAdapter(getContext(), cursor);
@@ -123,7 +123,7 @@ public class MainListFragment extends ListFragment {
         super.onListItemClick(l, v, position, id);
 
           DataBaseHelper dbh = DataBaseHelper.getInstance(getContext());
-          cursor = dbh.getAll();
+          cursor = dbh.getAllSpots();
 
           if(cursor.getPosition() < 0){
              cursor.moveToFirst();

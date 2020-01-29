@@ -37,7 +37,7 @@
             android:id="@+id/add_spot_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/add_spot" />
+            android:text="FINISH" />
 
 
     </LinearLayout>

@@ -2,6 +2,7 @@ package com.example.knightjeffrey_myfishspots.fragments;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -12,11 +13,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.example.knightjeffrey_myfishspots.R;
+import com.example.knightjeffrey_myfishspots.models.FishCaught;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+
+import javax.xml.transform.Result;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -24,8 +33,11 @@ import java.util.ArrayList;
 public class NewCatchFragment extends Fragment implements View.OnClickListener {
 
     public static final String TAG = "NewCatchFragment.TAG";
+    private static final String EXTRA_ID = "EXTRA_ID";
+    private static final int REQUEST_IMAGE = 0x0010;
 
     NewCatchListener listener;
+    ImageButton imageButton;
 
     EditText speciesInput;
     EditText lengthInput;
@@ -35,8 +47,21 @@ public class NewCatchFragment extends Fragment implements View.OnClickListener {
     Spinner tideSpinner;
     Spinner methodSpinner;
 
+    String species;
+    Double length;
+    Double weight;
+    String lure;
+    String tide;
+    String method;
+    String imgPath;
+
+    int tideIndex;
+    int methodIndex;
+    int locationID;
+
     ArrayList<String> tides;
     ArrayList<String> methods;
+    boolean imageReceived = false;
 
     public NewCatchFragment() {
         // Required empty public constructor
@@ -51,8 +76,17 @@ public class NewCatchFragment extends Fragment implements View.OnClickListener {
         return fragment;
     }
 
+    public static NewCatchFragment newInstance(int _id) {
+
+        Bundle args = new Bundle();
+        args.putInt(EXTRA_ID,_id);
+        NewCatchFragment fragment = new NewCatchFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     public interface NewCatchListener{
-        void addNewCatch();
+        void addNewCatch(FishCaught fish);
     }
 
     @Override
@@ -73,7 +107,9 @@ public class NewCatchFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if(getView() != null){
+        if(getView() != null && getArguments() != null){
+
+            locationID = getArguments().getInt(EXTRA_ID);
 
             speciesInput = getView().findViewById(R.id.species_input);
             lengthInput = getView().findViewById(R.id.length_input);
@@ -84,6 +120,8 @@ public class NewCatchFragment extends Fragment implements View.OnClickListener {
             methodSpinner = getView().findViewById(R.id.method_spinner);
             setUpSpinners();
             getView().findViewById(R.id.add_catch_btn).setOnClickListener(this);
+            imageButton = getView().findViewById(R.id.retrieve_img_btn);
+            imageButton.setOnClickListener(this);
 
         }
 
@@ -121,5 +159,66 @@ public class NewCatchFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
 
+        switch (v.getId()){
+            case R.id.add_catch_btn:
+                if(validateInput()){
+
+                    Date date = Calendar.getInstance().getTime();
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    String dateStr = dateFormat.format(date);
+                    listener.addNewCatch( new FishCaught(locationID, species, weight, length, lure, tide, method, imgPath,dateStr));
+
+                }else{
+                    Toast.makeText(getContext(),"An image or species is needed to add catch",Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case R.id.retrieve_img_btn:
+
+                Intent galleryIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                galleryIntent.setType("image/*");
+                startActivityForResult(galleryIntent,REQUEST_IMAGE);
+                break;
+        }
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+
+        if(requestCode == REQUEST_IMAGE){
+            imageButton.setImageURI(data.getData());
+            imageReceived = true;
+            imgPath = data.getData().toString();
+        }
+    }
+
+    public boolean validateInput(){
+        boolean isValid = true;
+
+        species = speciesInput.getText().toString();
+        String lengthStr = lengthInput.getText().toString();
+        String weightStr = weightInput.getText().toString();
+        lure = lureInput.getText().toString();
+
+        tideIndex = tideSpinner.getSelectedItemPosition();
+        methodIndex = methodSpinner.getSelectedItemPosition();
+
+        if(!imageReceived && species.isEmpty()){
+            isValid = false;
+        }
+        if(species.isEmpty()){ species = "Null";}
+        if(!lengthStr.isEmpty()){ length = Double.parseDouble(lengthStr); }
+        else{ length = 0.0;}
+        if(!weightStr.isEmpty()){ weight = Double.parseDouble(weightStr); }
+        else{ weight = 0.0;}
+        if(lure.isEmpty()){ lure = "Null";}
+        if(tideIndex != 0){ tide = tides.get(tideIndex);}
+        else{ tide = "Null";}
+        if(methodIndex != 0){ method = methods.get(methodIndex);}
+        else{ method = "Null";}
+        if(!imageReceived){imgPath = "Null";}
+        return isValid;
     }
 }
