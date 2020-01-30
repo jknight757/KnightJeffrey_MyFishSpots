@@ -7,7 +7,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,8 +22,14 @@ import com.example.knightjeffrey_myfishspots.fragments.NewSpotDetail;
 import com.example.knightjeffrey_myfishspots.models.DataBaseHelper;
 import com.example.knightjeffrey_myfishspots.models.FishSpots;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -44,7 +50,9 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
     Cursor cursor;
 
     private FirebaseAuth mAuth;
+    private FirebaseFirestore fireStoreDB;
     FirebaseUser currentUser;
+
     private static final int ADD_STATE_START = 20;
     private static final int ADD_STATE_SEARCH = 30;
     private static final String EXTRA_ID = "EXTRA_ID";
@@ -158,6 +166,10 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
     public void longPress(LatLng location) {
         latitude = location.latitude;
         longitude = location.longitude;
+        String latStr = latitude + "";
+        String longStr = longitude + "";
+        latInput.setText(latStr);
+        longInput.setText(longStr);
     }
 
     @Override
@@ -166,9 +178,9 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
         dbh = DataBaseHelper.getInstance(this);
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
-
+        String userID;
         if (currentUser != null) {
-            String userID = currentUser.getUid();
+            userID = currentUser.getUid();
             if(spotToEdit != null){
                 ContentValues cv = new ContentValues();
                 cv.put(DataBaseHelper.COLUMN_USER_ID, userID);
@@ -182,11 +194,41 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
 
             }else{
                 dbh.insertLocation(spot, userID);
+
             }
+
+
 
             Cursor c = dbh.getAllSpots();
             c.moveToLast();
             int id = c.getInt(c.getColumnIndex(DataBaseHelper.COLUMN_ID));
+            spot.setLocationId(id);
+
+            fireStoreDB = FirebaseFirestore.getInstance();
+            DocumentReference firebaseLocations = fireStoreDB.collection("locations").document(userID.toString());
+            firebaseLocations.set(spot).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Toast.makeText(AddAndViewActivity.this,"Spot Added",Toast.LENGTH_SHORT).show();
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(AddAndViewActivity.this,"Unable to add",Toast.LENGTH_SHORT).show();
+                }
+            });
+//                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+//                @Override
+//                public void onSuccess(DocumentReference documentReference) {
+//
+//                }
+//            }).addOnFailureListener(new OnFailureListener() {
+//                @Override
+//                public void onFailure(@NonNull Exception e) {
+//
+//                }
+//            });
 
             Intent resultIntent = new Intent();
             resultIntent.putExtra(EXTRA_ID, id);
@@ -229,7 +271,6 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
         LatLng coordinate = new LatLng(latitude,longitude);
 
         return new FishSpots(coordinate,name, description, dateStr);
-
 
     }
 

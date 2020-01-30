@@ -317,6 +317,5 @@ public class MainMapFragment extends SupportMapFragment implements OnMapReadyCal
         zoomInCamera(latLng.latitude,latLng.longitude);
 
 
-
     }
 }

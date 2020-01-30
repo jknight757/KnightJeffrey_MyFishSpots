@@ -4,10 +4,16 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.knightjeffrey_myfishspots.R;
 import com.example.knightjeffrey_myfishspots.fragments.LoginFragment;
@@ -35,10 +41,13 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
     private static final int ADDED_HOME_STATE = 40;
     private static final int ADD_SPOT_REQUEST_CODE = 99;
     private static final int ADD_CATCH_REQUEST_CODE = 300;
+    private static final int VIEW_CATCH_REQUEST_CODE = 355;
     private static final int EDIT_SPOT_REQUEST_CODE = 77;
     private static final int REQUEST_IMAGE = 0x0010;
 
     private static final String EXTRA_ID = "EXTRA_ID";
+    private static final String EXTRA_CATCH_ID = "EXTRA_CATCH_ID";
+    private static final String EXTRA_INTENT_CODE = "EXTRA_INTENT_CODE";
 
 
 
@@ -49,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
 
         mAuth = FirebaseAuth.getInstance();
         fragmentLogin = LoginFragment.newInstance();
-        Log.i("TAG", "Things ................. 2");
+
         if(!checkUserLoginState()) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.main_fragment_container, fragmentLogin, LoginFragment.TAG).commit();
@@ -63,7 +72,12 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.list_fragment_container, listFragment,MainListFragment.TAG).commit();
         }
+        if(checkInternet()){
+            Toast.makeText(this, "Connected to internet", Toast.LENGTH_SHORT).show();
+        }else{
+            Toast.makeText(this, "Connected to internet", Toast.LENGTH_SHORT).show();
 
+        }
 
 
     }
@@ -189,6 +203,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
     public void newCatch(int id) {
         Intent catchesIntent = new Intent(this, CatchesActivity.class);
         catchesIntent.putExtra(EXTRA_ID,id);
+        catchesIntent.putExtra(EXTRA_INTENT_CODE,ADD_CATCH_REQUEST_CODE);
         startActivityForResult(catchesIntent,ADD_CATCH_REQUEST_CODE);
     }
 
@@ -198,6 +213,15 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
         editIntent.putExtra(EXTRA_ID,id);
         startActivityForResult(editIntent,EDIT_SPOT_REQUEST_CODE);
 
+    }
+
+    @Override
+    public void clickSpot(int spotId, int catchId) {
+        Intent catchesIntent = new Intent(this, CatchesActivity.class);
+        catchesIntent.putExtra(EXTRA_ID,spotId);
+        catchesIntent.putExtra(EXTRA_CATCH_ID,catchId);
+        catchesIntent.putExtra(EXTRA_INTENT_CODE,VIEW_CATCH_REQUEST_CODE);
+        startActivityForResult(catchesIntent,VIEW_CATCH_REQUEST_CODE);
     }
     ///// ^^^ SPOT DETAIL FRAGMENT CALLBACK METHODS ^^^ /////
 
@@ -268,5 +292,37 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
         listFragment = MainListFragment.newInstance();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.list_fragment_container, listFragment, MainListFragment.TAG).commit();
+    }
+
+    public boolean checkInternet(){
+        boolean isConnected = false;
+        ConnectivityManager connectMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if(connectMgr != null){
+                NetworkCapabilities capabilities =
+                        connectMgr.getNetworkCapabilities(connectMgr.getActiveNetwork());
+                if(capabilities != null){
+                    if(capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)){
+                        isConnected = true;
+                    }else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)){
+                        isConnected = true;
+                    }
+                }
+            }
+        }else{
+            if(connectMgr != null){
+                NetworkInfo activeNetwork = connectMgr.getActiveNetworkInfo();
+                if(activeNetwork != null){
+                    if(activeNetwork.getType() == ConnectivityManager.TYPE_WIFI){
+                        isConnected = true;
+                    }else if ( activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE){
+                        isConnected = true;
+                    }
+                }
+            }
+        }
+        return isConnected;
+
+
     }
 }

@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.knightjeffrey_myfishspots.R;
+import com.example.knightjeffrey_myfishspots.fragments.CatchDetailFragment;
 import com.example.knightjeffrey_myfishspots.fragments.NewCatchFragment;
 import com.example.knightjeffrey_myfishspots.models.DataBaseHelper;
 import com.example.knightjeffrey_myfishspots.models.FishCaught;
@@ -19,8 +20,15 @@ import com.google.firebase.auth.FirebaseUser;
 public class CatchesActivity extends AppCompatActivity implements NewCatchFragment.NewCatchListener{
 
     NewCatchFragment newCatchFragment;
+    CatchDetailFragment catchDetailFragment;
     private static final String EXTRA_ID = "EXTRA_ID";
     int locationID;
+
+    private static final String EXTRA_INTENT_CODE = "EXTRA_INTENT_CODE";
+    private static final String EXTRA_CATCH_ID = "EXTRA_CATCH_ID";
+    private static final int ADD_CATCH_REQUEST_CODE = 300;
+    private static final int VIEW_CATCH_REQUEST_CODE = 355;
+    private int intentCode;
 
     DataBaseHelper dbh;
 
@@ -35,15 +43,27 @@ public class CatchesActivity extends AppCompatActivity implements NewCatchFragme
         Intent starterIntent = getIntent();
         if(starterIntent.hasExtra(EXTRA_ID)){
             locationID = starterIntent.getIntExtra(EXTRA_ID, -1);
+            intentCode = starterIntent.getIntExtra(EXTRA_INTENT_CODE, -1);
             if(locationID != -1){
-                newCatchFragment = NewCatchFragment.newInstance(locationID);
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.catches_fragment_container,newCatchFragment,NewCatchFragment.TAG).commit();
+                switch (intentCode){
+                    case ADD_CATCH_REQUEST_CODE:
+                        newCatchFragment = NewCatchFragment.newInstance(locationID);
+                        getSupportFragmentManager().beginTransaction()
+                                .add(R.id.catches_fragment_container,newCatchFragment,NewCatchFragment.TAG).commit();
+                        break;
+                    case VIEW_CATCH_REQUEST_CODE:
+                        int catchId = starterIntent.getIntExtra(EXTRA_CATCH_ID, -1);
+                        catchDetailFragment = CatchDetailFragment.newInstance(locationID, catchId);
+                        getSupportFragmentManager().beginTransaction()
+                                .add(R.id.catches_fragment_container,catchDetailFragment,CatchDetailFragment.TAG).commit();
+                        break;
+                }
+
             }
         }else{
-            newCatchFragment = NewCatchFragment.newInstance();
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.catches_fragment_container,newCatchFragment,NewCatchFragment.TAG).commit();
+//            newCatchFragment = NewCatchFragment.newInstance();
+//            getSupportFragmentManager().beginTransaction()
+//                    .add(R.id.catches_fragment_container,newCatchFragment,NewCatchFragment.TAG).commit();
         }
 
     }

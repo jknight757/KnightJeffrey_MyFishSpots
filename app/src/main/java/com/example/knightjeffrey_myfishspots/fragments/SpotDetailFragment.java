@@ -17,6 +17,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,7 +34,7 @@ import com.google.firebase.auth.FirebaseUser;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class SpotDetailFragment extends Fragment implements View.OnClickListener {
+public class SpotDetailFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemClickListener {
 
     public static final String TAG = "SpotDetailFragment.TAG";
     private static final String ID_KEY = "ID_KEY";
@@ -56,14 +57,7 @@ public class SpotDetailFragment extends Fragment implements View.OnClickListener
     private int locationID;
 
     // Fish variables
-    private String species;
-    private Double length;
-    private Double weight;
-    private String lure;
-    private String tide;
-    private String method;
-    private String imgPath;
-    private String date;
+
 
     SpotDetailListener listener;
     ListView listView;
@@ -78,6 +72,7 @@ public class SpotDetailFragment extends Fragment implements View.OnClickListener
         void returnHomeSD();
         void newCatch(int id);
         void editSpot(int id);
+        void clickSpot(int spotId, int catchId);
     }
 
     public static SpotDetailFragment newInstance(int _id) {
@@ -129,7 +124,6 @@ public class SpotDetailFragment extends Fragment implements View.OnClickListener
             locationID = getArguments().getInt(ID_KEY);
             queryDatabase(locationID);
 
-
         }
     }
 
@@ -153,9 +147,16 @@ public class SpotDetailFragment extends Fragment implements View.OnClickListener
             case R.id.edit_btn:
                 listener.editSpot(locationID);
                 break;
+
         }
 
     }
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        listener.clickSpot(locationID, position);
+        Toast.makeText(getContext(), "Item clicked: "+ position, Toast.LENGTH_SHORT).show();
+    }
+
 
     private void queryDatabase(int id){
 
@@ -221,6 +222,7 @@ public class SpotDetailFragment extends Fragment implements View.OnClickListener
 //                });
                 CatchesTableCursorAdapter adapter = new CatchesTableCursorAdapter(getContext(), cursor);
                 listView.setAdapter(adapter);
+                listView.setOnItemClickListener(this);
 
             }
         }else{
