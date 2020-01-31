@@ -1,10 +1,12 @@
 package com.example.knightjeffrey_myfishspots.activities;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
@@ -23,6 +25,7 @@ import com.example.knightjeffrey_myfishspots.fragments.NewSpotDetail;
 import com.example.knightjeffrey_myfishspots.fragments.SignUpFragment;
 import com.example.knightjeffrey_myfishspots.fragments.SpotDetailFragment;
 import com.example.knightjeffrey_myfishspots.models.DataBaseHelper;
+import com.example.knightjeffrey_myfishspots.models.RemoteDataManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -56,29 +59,50 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mAuth = FirebaseAuth.getInstance();
-        fragmentLogin = LoginFragment.newInstance();
+        if(checkInternet()) {
+            mAuth = FirebaseAuth.getInstance();
+            fragmentLogin = LoginFragment.newInstance();
 
-        if(!checkUserLoginState()) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.main_fragment_container, fragmentLogin, LoginFragment.TAG).commit();
-        }else{
-            mapFragment = MainMapFragment.newInstance(HOME_SCREEN_STATE);
-            // add new fragment
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.map_fragment_container, mapFragment,MainMapFragment.TAG).commit();
+            if (!checkUserLoginState()) {
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.main_fragment_container, fragmentLogin, LoginFragment.TAG).commit();
+            } else {
+                mapFragment = MainMapFragment.newInstance(HOME_SCREEN_STATE);
+                // add new fragment
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.map_fragment_container, mapFragment, MainMapFragment.TAG).commit();
 
-            listFragment = MainListFragment.newInstance();
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.list_fragment_container, listFragment,MainListFragment.TAG).commit();
+                listFragment = MainListFragment.newInstance();
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.list_fragment_container, listFragment, MainListFragment.TAG).commit();
+            }
+        }else {
+            AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+            alert.setTitle("No Internet");
+            alert.setMessage("You must be connected to the internet to use this application");
+
+            alert.setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                    System.exit(0);
+                }
+            });
+            AlertDialog dialog = alert.create();
+            dialog.show();
+
+
         }
-        if(checkInternet()){
-            Toast.makeText(this, "Connected to internet", Toast.LENGTH_SHORT).show();
-        }else{
-            Toast.makeText(this, "Connected to internet", Toast.LENGTH_SHORT).show();
 
-        }
+        RemoteDataManager remoteMgr = new RemoteDataManager(getApplicationContext());
+        //remoteMgr.getLocalData();
+        remoteMgr.getRemoteData();
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
 
     }
 

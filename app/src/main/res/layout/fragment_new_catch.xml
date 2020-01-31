@@ -40,13 +40,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Length"
-                android:layout_weight="1"/>
+                android:layout_weight="1"
+                android:inputType="numberDecimal"/>
             <EditText
                 android:id="@+id/weight_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Weight"
-                android:layout_weight="1"/>
+                android:layout_weight="1"
+                android:inputType="numberDecimal"/>
         </LinearLayout>
 
         <EditText

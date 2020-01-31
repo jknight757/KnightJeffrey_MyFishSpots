@@ -4,8 +4,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -176,11 +181,56 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
     public void confirmAdd(FishSpots spot) {
 
         dbh = DataBaseHelper.getInstance(this);
-        mAuth = FirebaseAuth.getInstance();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        String userID;
-        if (currentUser != null) {
-            userID = currentUser.getUid();
+        String userID = "1234";
+        int id = -1;
+
+        if(checkInternet()){
+            mAuth = FirebaseAuth.getInstance();
+            FirebaseUser currentUser = mAuth.getCurrentUser();
+
+            if (currentUser != null) {
+                userID = currentUser.getUid();
+                if(spotToEdit != null){
+                    ContentValues cv = new ContentValues();
+                    cv.put(DataBaseHelper.COLUMN_USER_ID, userID);
+                    cv.put(DataBaseHelper.COLUMN_NAME, spot.getName());
+                    cv.put(DataBaseHelper.COLUMN_LATITUDE, spot.getCoordinate().latitude);
+                    cv.put(DataBaseHelper.COLUMN_LONGITUDE, spot.getCoordinate().longitude);
+                    cv.put(DataBaseHelper.COLUMN_DESCRIPTION, spot.getDescription());
+                    cv.put(DataBaseHelper.COLUMN_DATE, spot.getDate());
+                    dbh.mDatabase.update(DataBaseHelper.TABLE_NAME_FIRST,cv,"_id="+ locationID,null);
+
+
+                }else{
+                    dbh.insertLocation(spot, userID);
+
+                }
+
+
+
+                Cursor c = dbh.getAllSpots();
+                c.moveToLast();
+                id = c.getInt(c.getColumnIndex(DataBaseHelper.COLUMN_ID));
+                spot.setLocationId(id);
+                String locationIdStr = spot.getLocationId() + "";
+                fireStoreDB = FirebaseFirestore.getInstance();
+                DocumentReference firebaseLocations = fireStoreDB.collection("locations").document(userID);
+                DocumentReference mylocations =  firebaseLocations.collection("myLocations").document(locationIdStr);
+                mylocations.set(spot).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(AddAndViewActivity.this,"Spot Added",Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(AddAndViewActivity.this,"Unable to add",Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+            }
+        }else {
             if(spotToEdit != null){
                 ContentValues cv = new ContentValues();
                 cv.put(DataBaseHelper.COLUMN_USER_ID, userID);
@@ -201,40 +251,15 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
 
             Cursor c = dbh.getAllSpots();
             c.moveToLast();
-            int id = c.getInt(c.getColumnIndex(DataBaseHelper.COLUMN_ID));
+            id = c.getInt(c.getColumnIndex(DataBaseHelper.COLUMN_ID));
             spot.setLocationId(id);
-
-            fireStoreDB = FirebaseFirestore.getInstance();
-            DocumentReference firebaseLocations = fireStoreDB.collection("locations").document(userID.toString());
-            firebaseLocations.set(spot).addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    Toast.makeText(AddAndViewActivity.this,"Spot Added",Toast.LENGTH_SHORT).show();
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(AddAndViewActivity.this,"Unable to add",Toast.LENGTH_SHORT).show();
-                }
-            });
-//                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-//                @Override
-//                public void onSuccess(DocumentReference documentReference) {
-//
-//                }
-//            }).addOnFailureListener(new OnFailureListener() {
-//                @Override
-//                public void onFailure(@NonNull Exception e) {
-//
-//                }
-//            });
-
-            Intent resultIntent = new Intent();
-            resultIntent.putExtra(EXTRA_ID, id);
-            setResult(RESULT_OK, resultIntent);
-            finish();
         }
+
+
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra(EXTRA_ID, id);
+        setResult(RESULT_OK, resultIntent);
+        finish();
 
     }
 
@@ -271,6 +296,38 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
         LatLng coordinate = new LatLng(latitude,longitude);
 
         return new FishSpots(coordinate,name, description, dateStr);
+
+    }
+
+    public boolean checkInternet(){
+        boolean isConnected = false;
+        ConnectivityManager connectMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if(connectMgr != null){
+                NetworkCapabilities capabilities =
+                        connectMgr.getNetworkCapabilities(connectMgr.getActiveNetwork());
+                if(capabilities != null){
+                    if(capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)){
+                        isConnected = true;
+                    }else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)){
+                        isConnected = true;
+                    }
+                }
+            }
+        }else{
+            if(connectMgr != null){
+                NetworkInfo activeNetwork = connectMgr.getActiveNetworkInfo();
+                if(activeNetwork != null){
+                    if(activeNetwork.getType() == ConnectivityManager.TYPE_WIFI){
+                        isConnected = true;
+                    }else if ( activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE){
+                        isConnected = true;
+                    }
+                }
+            }
+        }
+        return isConnected;
+
 
     }
 
