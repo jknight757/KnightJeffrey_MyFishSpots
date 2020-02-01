@@ -3,4 +3,20 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
+
+    <color name="BluePalletPrimaryDark">#575FF2</color>
+    <color name="BluePalletPrimary">#5C73F2</color>
+    <color name="BluePalletPrimaryLight">#6B8DF2</color>
+    <color name="BluePalletOffBlue">#7EB6D9</color>
+    <color name="BluePalletDark">#0D0D0D</color>
+
+    <color name="BlueSecondaryLight">#2039CC</color>
+    <color name="BlueSecondary">#192DA1</color>
+    <color name="BlueSecondaryDark">#111E6C</color>
+    <color name="BlueSecondaryDarkDark">#0C154A</color>
+    <color name="BlueDarkest">#080E33</color>
+
+    <color name="GreyishBlue1">#7A96AB</color>
+    <color name="GreyishBlue2">#526F84</color>
+
 </resources>

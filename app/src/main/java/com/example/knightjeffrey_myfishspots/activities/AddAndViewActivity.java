@@ -35,6 +35,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -57,6 +59,7 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
     private FirebaseAuth mAuth;
     private FirebaseFirestore fireStoreDB;
     FirebaseUser currentUser;
+    private StorageReference mStorageRef;
 
     private static final int ADD_STATE_START = 20;
     private static final int ADD_STATE_SEARCH = 30;
@@ -214,6 +217,7 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
                 spot.setLocationId(id);
                 String locationIdStr = spot.getLocationId() + "";
                 fireStoreDB = FirebaseFirestore.getInstance();
+
                 DocumentReference firebaseLocations = fireStoreDB.collection("locations").document(userID);
                 DocumentReference mylocations =  firebaseLocations.collection("myLocations").document(locationIdStr);
                 mylocations.set(spot).addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -228,6 +232,8 @@ public class AddAndViewActivity extends AppCompatActivity implements View.OnClic
                         Toast.makeText(AddAndViewActivity.this,"Unable to add",Toast.LENGTH_SHORT).show();
                     }
                 });
+
+
 
             }
         }else {

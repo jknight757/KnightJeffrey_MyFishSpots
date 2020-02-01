@@ -1,46 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.SignUpFragment">
+    tools:context=".fragments.SignUpFragment"
+    android:background="@color/BluePalletOffBlue">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintTop_toTopOf="@id/horizontal_guideline"
+        app:layout_constraintStart_toStartOf="@id/vertical_start_guideline"
+        app:layout_constraintEnd_toEndOf="@id/vertical_end_guideline">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="@string/new_user"
             android:textAlignment="center"
             android:textSize="30sp"
-            android:text="@string/new_user"/>
+            style="@style/MainSpacingFormat"/>
 
         <EditText
             android:id="@+id/username_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/email"/>
+            android:hint="@string/email"
+            style="@style/LoginFormEditText"/>
+
         <EditText
             android:id="@+id/username_input2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/re_enter_email"/>
+            android:hint="@string/re_enter_email"
+            style="@style/LoginFormEditText"/>
 
         <EditText
             android:id="@+id/password_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/password"/>
+            android:hint="@string/password"
+            style="@style/LoginFormEditText"/>
 
 
         <Button
             android:id="@+id/btn_signup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/sign_up"/>
+            android:text="@string/sign_up"
+            style="@style/MainSpacingFormat"/>
 
     </LinearLayout>
 
-</FrameLayout>
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/vertical_start_guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="21dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/vertical_end_guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_end="21dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/horizontal_guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.2" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

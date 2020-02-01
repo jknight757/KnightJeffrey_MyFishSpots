@@ -5,9 +5,12 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
@@ -15,6 +18,8 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.knightjeffrey_myfishspots.R;
@@ -40,6 +45,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
     private FirebaseAuth mAuth;
     FirebaseUser currentUser;
 
+    ProgressBar remoteDataPB;
+
     private static final int HOME_SCREEN_STATE = 10;
     private static final int ADDED_HOME_STATE = 40;
     private static final int ADD_SPOT_REQUEST_CODE = 99;
@@ -52,12 +59,25 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
     private static final String EXTRA_CATCH_ID = "EXTRA_CATCH_ID";
     private static final String EXTRA_INTENT_CODE = "EXTRA_INTENT_CODE";
 
+    private final RemoteDataReceiver receiver = new RemoteDataReceiver();
+
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if(getSupportActionBar() != null){
+            getSupportActionBar().setTitle("My Fish Spots");
+        }
+
+        remoteDataPB = findViewById(R.id.progressbar);
+
+        if(getIntent() != null){
+
+            Toast.makeText(this, "action " +getIntent().getAction(), Toast.LENGTH_SHORT).show();
+        }
 
         if(checkInternet()) {
             mAuth = FirebaseAuth.getInstance();
@@ -67,14 +87,13 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
                 getSupportFragmentManager().beginTransaction()
                         .add(R.id.main_fragment_container, fragmentLogin, LoginFragment.TAG).commit();
             } else {
-                mapFragment = MainMapFragment.newInstance(HOME_SCREEN_STATE);
-                // add new fragment
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.map_fragment_container, mapFragment, MainMapFragment.TAG).commit();
 
-                listFragment = MainListFragment.newInstance();
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.list_fragment_container, listFragment, MainListFragment.TAG).commit();
+                remoteDataPB.setVisibility(View.VISIBLE);
+                Intent remoteIntent = new Intent(this,RemoteDataManager.class);
+                remoteIntent.setAction(RemoteDataManager.ACTION_REMOTE_DATA);
+                startService(remoteIntent);
+
+
             }
         }else {
             AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
@@ -94,16 +113,16 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
 
         }
 
-        RemoteDataManager remoteMgr = new RemoteDataManager(getApplicationContext());
-        //remoteMgr.getLocalData();
-        remoteMgr.getRemoteData();
+
 
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-
+    protected void onResume() {
+        super.onResume();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(RemoteDataManager.ACTION_RECEIVE_MSG);
+        registerReceiver(receiver,filter);
     }
 
     public boolean checkUserLoginState(){
@@ -121,15 +140,13 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
         // remove old fragment
         getSupportFragmentManager().beginTransaction()
                 .remove(fragmentLogin).commit();
+        remoteDataPB.setVisibility(View.VISIBLE);
 
-        // add new fragment
-        mapFragment = MainMapFragment.newInstance(HOME_SCREEN_STATE);
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.map_fragment_container, mapFragment, MainMapFragment.TAG).commit();
+        Intent remoteIntent = new Intent(this,RemoteDataManager.class);
+        remoteIntent.setAction(RemoteDataManager.ACTION_REMOTE_DATA);
+        startService(remoteIntent);
 
-        listFragment = MainListFragment.newInstance();
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.list_fragment_container, listFragment, MainListFragment.TAG).commit();
+
     }
 
     @Override
@@ -188,6 +205,24 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
     }
 
     @Override
+    public void logoutClicked() {
+        FirebaseAuth.getInstance().signOut();
+                    // remove map fragment
+            getSupportFragmentManager().beginTransaction()
+                    .remove(mapFragment).commit();
+            // remove list fragment
+            getSupportFragmentManager().beginTransaction()
+                    .remove(listFragment).commit();
+
+        fragmentLogin = LoginFragment.newInstance();
+
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.main_fragment_container, fragmentLogin, LoginFragment.TAG).commit();
+
+
+    }
+
+    @Override
     public void addClicked() {
         Intent addIntent = new Intent(this, AddAndViewActivity.class);
         startActivityForResult(addIntent, ADD_SPOT_REQUEST_CODE);
@@ -200,6 +235,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
     public void windowClicked(int id) {
 
         // remove map fragment
+        getSupportFragmentManager().beginTransaction()
+                .remove(mapFragment).commit();
         getSupportFragmentManager().beginTransaction()
                 .remove(mapFragment).commit();
         // remove list fragment
@@ -307,11 +344,10 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
     public void refreshHomeScreen(){
 
 
-
         // add home screen fragments
         mapFragment = MainMapFragment.newInstance(HOME_SCREEN_STATE);
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.map_fragment_container, mapFragment, MainMapFragment.TAG).commit();
+                .replace(R.id.map_fragment_container, mapFragment, MainMapFragment.TAG).commit();
 
         listFragment = MainListFragment.newInstance();
         getSupportFragmentManager().beginTransaction()
@@ -347,6 +383,29 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.Log
         }
         return isConnected;
 
+    }
 
+    class RemoteDataReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            Log.i("MainActivity", "onReceive: ");
+            remoteDataPB.setVisibility(View.GONE);
+
+
+            refreshHomeScreen();
+
+//            mapFragment = MainMapFragment.newInstance(HOME_SCREEN_STATE);
+//            // add new fragment
+//            getSupportFragmentManager().beginTransaction()
+//                    .add(R.id.map_fragment_container, mapFragment, MainMapFragment.TAG).commit();
+//
+//            listFragment = MainListFragment.newInstance();
+//            getSupportFragmentManager().beginTransaction()
+//                    .add(R.id.list_fragment_container, listFragment, MainListFragment.TAG).commit();
+
+
+        }
     }
 }

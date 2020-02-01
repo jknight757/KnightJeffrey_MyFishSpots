@@ -9,19 +9,23 @@
     <FrameLayout
         android:id="@+id/top_level_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/GreyishBlue1">
 
 
 
     <FrameLayout
         android:id="@+id/main_fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        >
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginTop="15dp">
+            android:layout_marginTop="15dp"
+            android:layout_marginStart="21dp"
+            android:layout_marginEnd="21dp">
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -37,12 +41,14 @@
         </LinearLayout>
 
 
-        <androidx.appcompat.widget.LinearLayoutCompat
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:weightSum="5"
-            android:layout_marginTop="100dp">
+            android:layout_marginTop="100dp"
+            android:layout_marginStart="21dp"
+            android:layout_marginEnd="21dp">
             <EditText
                 android:id="@+id/lat_input"
                 android:layout_width="50dp"
@@ -62,22 +68,45 @@
                 android:layout_weight="1"
                 android:text="@string/search"/>
 
-        </androidx.appcompat.widget.LinearLayoutCompat>
+        </LinearLayout>
 
     <FrameLayout
         android:id="@+id/map_fragment_container"
         android:layout_width="match_parent"
         android:layout_height="350dp"
         android:layout_marginTop="200dp"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="@id/top_horizontal_guide" />
     </FrameLayout>
     </FrameLayout>
     <Button
         android:id="@+id/btn_next"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:text="Next Step"/>
+        android:text="Next Step"
+        app:layout_constraintStart_toStartOf="@id/start_vertical_guide"
+        app:layout_constraintEnd_toEndOf="@id/end_vertical_guideline"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/start_vertical_guide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="21dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/end_vertical_guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_end="21dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/top_horizontal_guide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.27" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

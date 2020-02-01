@@ -53,6 +53,7 @@ public class MainListFragment extends ListFragment {
     public interface MenuClickListener{
         void addClicked();
         void listItemClicked(int _id);
+        void logoutClicked();
     }
 
     @Override
@@ -91,6 +92,10 @@ public class MainListFragment extends ListFragment {
 
         if(item.getItemId() == R.id.add_new){
             listener.addClicked();
+        }
+
+        if(item.getItemId() == R.id.logout){
+            listener.logoutClicked();
         }
         return super.onOptionsItemSelected(item);
     }

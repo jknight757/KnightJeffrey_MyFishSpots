@@ -7,5 +7,10 @@
         android:title="Add New"
         app:showAsAction="ifRoom"
         android:icon="@drawable/ic_add_white_24dp"/>
+    <item
+        android:id="@+id/logout"
+        android:title="logout"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_more_vert_white_24dp"/>
 
 </menu>

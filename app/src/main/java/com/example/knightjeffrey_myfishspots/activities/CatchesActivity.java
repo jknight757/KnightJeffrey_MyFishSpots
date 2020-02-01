@@ -9,8 +9,10 @@ import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -26,6 +28,12 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageException;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.io.File;
 
 public class CatchesActivity extends AppCompatActivity implements NewCatchFragment.NewCatchListener{
 
@@ -45,6 +53,7 @@ public class CatchesActivity extends AppCompatActivity implements NewCatchFragme
     private FirebaseAuth mAuth;
     FirebaseUser currentUser;
     private FirebaseFirestore fireStoreDB;
+    private StorageReference mStorageRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,6 +125,12 @@ public class CatchesActivity extends AppCompatActivity implements NewCatchFragme
                 String locationIdStr = locationID + "";
                 String catchIdStr = fish.getCatchId() + "";
                 fireStoreDB = FirebaseFirestore.getInstance();
+
+                mStorageRef = FirebaseStorage.getInstance().getReference("images/catches");
+                Uri imageUri = Uri.parse(fish.getImgPath());
+
+                StorageReference storageReference = mStorageRef.child( "/" +locationID + "/" + fish.getCatchId() + ".jpg");
+
                 DocumentReference firebaseLocations = fireStoreDB.collection("locations").document(userID);
                 DocumentReference mylocations =  firebaseLocations.collection("myLocations").document(locationIdStr);
                 DocumentReference myCatches = mylocations.collection("catches").document(catchIdStr);
@@ -133,6 +148,26 @@ public class CatchesActivity extends AppCompatActivity implements NewCatchFragme
                         Toast.makeText(CatchesActivity.this,"Fish Added",Toast.LENGTH_SHORT).show();
                     }
                 });
+
+
+                    storageReference.putFile(imageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                            Uri downloadUrl = taskSnapshot.getUploadSessionUri();
+                            Log.i("Add", "onSuccess: "+ downloadUrl.getPath());
+
+
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.i("Add", "onFailure: ");
+                            Log.i("Add", "onFailure: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    });
+
 
 
             }

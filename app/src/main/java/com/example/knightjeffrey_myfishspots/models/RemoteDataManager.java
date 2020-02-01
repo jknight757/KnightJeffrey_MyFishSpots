@@ -1,12 +1,16 @@
 package com.example.knightjeffrey_myfishspots.models;
 
 
+import android.app.IntentService;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -26,7 +30,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class RemoteDataManager {
+public class RemoteDataManager extends IntentService {
+
+    public static final String ACTION_REMOTE_DATA = "om.example.knightjeffrey_myfishspots.models.action.REMOTE_DATA";
+    public static final String ACTION_RECEIVE_MSG = "om.example.knightjeffrey_myfishspots.models.action.RECEIVE_MSG";
 
     Context mContext;
     Cursor localLocations;
@@ -40,17 +47,34 @@ public class RemoteDataManager {
     FirebaseAuth mAuth;
     FirebaseUser currentUser;
     private FirebaseFirestore fireStoreDB;
+    String Uid;
 
     DocumentSnapshot userDS;
 
-    public RemoteDataManager(Context mContext) {
-        this.mContext = mContext;
+    public RemoteDataManager() {
+        super("RemoteDataManager");
+    }
+
+    @Override
+    protected void onHandleIntent(@Nullable Intent intent) {
+        if(intent != null){
+            String action = intent.getAction();
+
+            if(action != null && action.equals( ACTION_REMOTE_DATA)){
+                mContext = getApplicationContext();
+                getRemoteData();
+
+            }
+        }
+
+
+
     }
 
     public void getRemoteData(){
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
-        final String Uid = currentUser.getUid();
+        Uid = currentUser.getUid();
         remoteLocations = new ArrayList<>();
         remoteCatches = new ArrayList<>();
 
@@ -96,6 +120,8 @@ public class RemoteDataManager {
                                             fishCaughtR.add(fish);
                                         }
                                         compareData();
+                                    }else{
+                                        compareData();
                                     }
                                 }
                             }
@@ -107,6 +133,8 @@ public class RemoteDataManager {
                         });
 
                     }
+                }else{
+                    broadCastComplete();
                 }
             }
         });
@@ -180,10 +208,11 @@ public class RemoteDataManager {
                     Toast.makeText(mContext, "Remote needs update", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                Toast.makeText(mContext, "Match", Toast.LENGTH_SHORT).show();
-                Toast.makeText(mContext, "local count: " + localSpots.size() + " remote: " + remoteLocations.size(), Toast.LENGTH_SHORT).show();
+               // Toast.makeText(mContext, "Match", Toast.LENGTH_SHORT).show();
+               // Toast.makeText(mContext, "local count: " + localSpots.size() + " remote: " + remoteLocations.size(), Toast.LENGTH_SHORT).show();
 
             }
+            broadCastComplete();
         }else {
             if(remoteLocations.size()> 0){
 //                Toast.makeText(mContext, "Local needs update", Toast.LENGTH_SHORT).show();
@@ -201,13 +230,15 @@ public class RemoteDataManager {
                     int locId = Integer.parseInt(d.getId());
 
                     FishSpots spot = new FishSpots(latLng,name,description,date);
+                    spot.setLocationId(Integer.parseInt( d.getId()));
                     localSpots.add(spot);
 
                 }
 
-            updateLocal();
             }
+            updateLocal();
         }
+        broadCastComplete();
 //        if(localCatches.size() == remoteCatches.size())
 //        {
 //            Toast.makeText(mContext, "Match", Toast.LENGTH_SHORT).show();
@@ -217,7 +248,32 @@ public class RemoteDataManager {
     }
 
     public void updateLocal(){
+        DataBaseHelper dbh = DataBaseHelper.getInstance(mContext);
+        if(localSpots.size() > 1){
+            Toast.makeText(mContext, " "+ localSpots.size(), Toast.LENGTH_SHORT).show();
+        }
+            for (FishSpots spot: localSpots) {
+            Toast.makeText(mContext, "Spot: "+ spot.getName(), Toast.LENGTH_SHORT).show();
+            dbh.insertLocation(spot, Uid);
+
+                for (FishCaught fish: fishCaughtR) {
+                    if(fish.getSpotId() == spot.getLocationId()){
+                        dbh.insertCatch(fish,Uid);
+
+                }
+
+            }
+        }
+        broadCastComplete();
+
         // loop through local spots and add to SQLite database
     }
+
+    public void broadCastComplete(){
+        Log.i("RemoteDataManager", "updateLocal: ");
+        Intent broadcastIntent = new Intent(ACTION_RECEIVE_MSG);
+        sendBroadcast(broadcastIntent);
+    }
+
 
 }

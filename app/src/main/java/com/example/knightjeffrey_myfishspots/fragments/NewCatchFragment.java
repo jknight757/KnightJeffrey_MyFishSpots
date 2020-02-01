@@ -3,11 +3,14 @@ package com.example.knightjeffrey_myfishspots.fragments;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +23,12 @@ import android.widget.Toast;
 import com.example.knightjeffrey_myfishspots.R;
 import com.example.knightjeffrey_myfishspots.models.FishCaught;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -62,6 +71,9 @@ public class NewCatchFragment extends Fragment implements View.OnClickListener {
     ArrayList<String> tides;
     ArrayList<String> methods;
     boolean imageReceived = false;
+    private static final String FOLDER_NAME = "catchImages";
+    private static File folderPath;
+    private static boolean fileCreated;
 
     public NewCatchFragment() {
         // Required empty public constructor
@@ -175,6 +187,8 @@ public class NewCatchFragment extends Fragment implements View.OnClickListener {
             case R.id.retrieve_img_btn:
 
                 Intent galleryIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+//                Intent galleryIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                galleryIntent.addCategory(Intent.CATEGORY_OPENABLE);
                 galleryIntent.setType("image/*");
                 startActivityForResult(galleryIntent,REQUEST_IMAGE);
                 break;
@@ -191,7 +205,48 @@ public class NewCatchFragment extends Fragment implements View.OnClickListener {
             imageButton.setImageURI(data.getData());
             imageReceived = true;
             imgPath = data.getData().toString();
+            byte[] byteArray = null;
+            try{
+                InputStream stream = getContext().getContentResolver().openInputStream(Uri.parse(imgPath));
+                byteArray= getBytes(stream);
+            }catch (IOException e){
+                Log.i(TAG, "onActivityResult: Image Not Converted to Byte[]");
+                e.printStackTrace();
+            }
+
+            if(byteArray != null){
+                try{
+
+                    folderPath = getContext().getExternalFilesDir(FOLDER_NAME +"/"+ System.currentTimeMillis());
+
+
+//                    FileOutputStream fos = getContext().openFileOutput(FOLDER_NAME,getContext().MODE_PRIVATE);
+                    FileOutputStream fos = new FileOutputStream(FOLDER_NAME);
+                    fos.write(byteArray);
+                    Log.i(TAG, "onActivityResult: img path "+  folderPath.getAbsolutePath());
+                    imgPath = folderPath.getAbsolutePath();
+                    fos.close();
+
+                }catch (IOException e){
+                    Log.i(TAG, "onActivityResult: Image Not Saved");
+                    e.printStackTrace();
+                }
+            }
+
+
         }
+    }
+
+    public byte[] getBytes(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+        int bufferSize = 1024;
+        byte[] buffer = new byte[bufferSize];
+
+        int len = 0;
+        while ((len = inputStream.read(buffer)) != -1) {
+            byteBuffer.write(buffer, 0, len);
+        }
+        return byteBuffer.toByteArray();
     }
 
     public boolean validateInput(){
@@ -221,4 +276,6 @@ public class NewCatchFragment extends Fragment implements View.OnClickListener {
         if(!imageReceived){imgPath = "Null";}
         return isValid;
     }
+
+
 }
